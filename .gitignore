@@ -221,6 +221,10 @@ project.lock.json
 # UWP Projects
 AppPackages/
 
+# ASP.NET Core
+TextRPG/TextRPG/bin/
+TextRPG/TextRPG/obj/
+
 #####
 # End of core ignore list, below put you custom 'per project' settings (patterns or path)
 #####
