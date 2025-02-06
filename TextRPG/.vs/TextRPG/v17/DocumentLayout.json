@@ -1,0 +1,49 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\nate\\source\\repos\\Github\\Sparta\\TextRPG\\TextRPG\\TextRPG\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5BFDD531-A2BA-4394-816C-74C44E663D73}|TextRPG\\TextRPG.csproj|c:\\users\\nate\\source\\repos\\github\\sparta\\textrpg\\textrpg\\textrpg\\textrpg\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5BFDD531-A2BA-4394-816C-74C44E663D73}|TextRPG\\TextRPG.csproj|solutionrelative:textrpg\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 280,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1ce3aef-c78d-49ee-b72b-ec1fbc908313}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\nate\\source\\repos\\Github\\Sparta\\TextRPG\\TextRPG\\TextRPG\\TextRPG\\Program.cs",
+              "RelativeDocumentMoniker": "TextRPG\\Program.cs",
+              "ToolTip": "C:\\Users\\nate\\source\\repos\\Github\\Sparta\\TextRPG\\TextRPG\\TextRPG\\TextRPG\\Program.cs",
+              "RelativeToolTip": "TextRPG\\Program.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAADwvwAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-06T07:05:21.538Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
