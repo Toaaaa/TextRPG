@@ -1,7 +1,7 @@
 ﻿using System;
 
 // 몬스터 기본 클래스
-public class Monster
+public class Monster : Actor
 {
     public string Name { get; }
     public int Level { get; }
