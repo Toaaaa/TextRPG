@@ -13,9 +13,9 @@ public class Player : Actor
     {
         Level = 1;
         Name = name;
-        ATK = 10;
+        TotalATK = 10;
         AddAttack = 0;
-        DEF = 5;
+        TotalDEF = 5;
         AddDefense = 0;
         MaxHP = 50;
         HP = 50;
@@ -61,7 +61,7 @@ public class Player : Actor
     public float CalcDamage()
     {
         var random = new Random();
-        var damage = (ATK + AddAttack) * (random.Next(90, 111) / 100);
+        var damage = (TotalATK) * (random.Next(90, 111) / 100);
         return damage;
     }
     
@@ -77,8 +77,8 @@ public class Player : Actor
         Level++;
         MaxHP += Level * 5;
         HP = MaxHP;
-        ATK += 5;
-        DEF += 2;
+        TotalATK += 5;
+        TotalDEF += 2;
         EXP = 0;
         return true;
     }

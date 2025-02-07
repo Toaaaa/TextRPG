@@ -4,8 +4,8 @@ public class Actor
 {
     public int Level { get; set; }
     public string Name { get; set; }
-    public int ATK { get; set; }
-    public int DEF { get; set; }
+    public int TotalATK { get; set; }
+    public int TotalDEF { get; set; }
     public int MaxHP { get; set; }
     public int HP { get; set; }
     public int Gold { get; set; }
@@ -16,7 +16,7 @@ public class Actor
     public virtual float CalcDamage()
     {
         var random = new Random();
-        var damage = ATK * (random.Next(90, 111) / 100);
+        var damage = TotalATK * (random.Next(90, 111) / 100);
         return damage;
     }
     
