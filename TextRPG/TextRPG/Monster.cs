@@ -5,25 +5,34 @@ public class Monster
 {
     public string Name { get; }
     public int Level { get; }
+    public int MaxHP { get; set; }
     public int HP { get; set; }
     public int ATK { get; set; }
     public int DEF { get; set; }
     public int SPD { get; set; }
     public int EXP { get; set; }
+
+    // 사망 여부
+
+    public bool IsDead
+    {
+    get { return HP <= 0; }
+    }
    
     // 몬스터 생성
-    public Monster(string name, int level, int hp, int atk, int def, int spd, int exp)
+    public Monster(string name, int level, int maxhp, int atk, int def, int spd, int exp)
     {
         Name = name;
         Level = level;
-        HP = hp;
+        MaxHP = maxhp;
+        HP = maxhp;
         ATK = atk;
         DEF = def;
         SPD = spd;
         EXP = exp;
     }
 
-    static void Main()
+    static void CreateMonster()
     {
        Monster snail = new Monster("달팽이", 1, 10, 2, 0, 1, 1);
        Monster goblin = new Monster("고블린", 3, 25, 5, 0, 1, 2);
