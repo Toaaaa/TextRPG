@@ -1,4 +1,4 @@
-﻿namespace TextRPG;
+namespace TextRPG.Objects;
 
 public class Dungeon
 {
