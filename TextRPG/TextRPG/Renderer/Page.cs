@@ -1,4 +1,6 @@
 
+using TextRPG.Objects;
+
 public enum PageType
 {
     START_PAGE,
@@ -46,7 +48,30 @@ public class Page
                                 _router.Navigate(PageType.SHOP_PAGE);
                                 break;
                             case 4:
-                                _router.Navigate(PageType.SHOP_PAGE);
+                                _router.Navigate(PageType.BATTLE_PAGE);
+                                break;
+                        }
+                    })
+            },
+            {
+                PageType.STATUS_PAGE,
+                new Renderer()
+                    .Contents(store =>
+                    {
+                        Player player = ObjectContext.Instance.Player;
+                        
+                        Console.WriteLine($"상태 보기\n\n캐릭터의 정보가 표시됩니다.\n");
+                        Console.WriteLine($"Lv. {player.Name}\nChad ( {player.Class} )\n공격력 : {player.TotalATK}\n방어력 : {player.TotalDEF}\n체 력 : {player.MaxHP}\nGold : {player.Gold} G\n");
+                        Console.WriteLine("\n원하시는 행동을 입력해주세요.\n>>");
+                        Console.WriteLine("0. 나가기");
+                    })
+                    .Choices((store, selection) =>
+                    {
+
+                        switch (selection)
+                        {
+                            case 0:
+                                _router.PopState();
                                 break;
                         }
                     })
@@ -63,26 +88,6 @@ public class Page
                         switch (selection)
                         {
                             case 2:
-                                _router.PopState();
-                                break;
-                        }
-                    })
-            },
-            {
-                PageType.STATUS_PAGE,
-                new Renderer()
-                    .Contents(store =>
-                    {
-                        Console.WriteLine($"상태 보기\n\n캐릭터의 정보가 표시됩니다.\n");
-                        Console.WriteLine("\n원하시는 행동을 입력해주세요.\n>>");
-                        Console.WriteLine("0. 나가기");
-                    })
-                    .Choices((store, selection) =>
-                    {
-
-                        switch (selection)
-                        {
-                            case 0:
                                 _router.PopState();
                                 break;
                         }
