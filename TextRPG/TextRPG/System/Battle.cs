@@ -94,8 +94,9 @@ public class Battle
         TotalGold += monster.Gold;
         //아이템 드랍.
     }
-    public void SetTargetMonster(Monster monster)//타겟 몬스터 설정
+    public void SetTargetMonster(int index)//타겟 몬스터 설정
     {
+        Monster? monster = GetMonster(index);
         TargetMonster = monster;
     }
     //전투
@@ -124,10 +125,10 @@ public class Battle
             actors.AddRange(MonsterList);//몬스터 추가
         TurnQueue = GetTurnQueue(actors);//턴 순서 정하기
     }
-    public void BattleTurn()//턴 진행시 호출
+    public bool BattleTurn()//턴 진행시 호출
     {
         TurnStart();
-        TurnEnd();
+        return TurnEnd();//true: 전투 종료, false: 계속 진행
     }
 
     public void TurnStart()//턴 시작시 호출
