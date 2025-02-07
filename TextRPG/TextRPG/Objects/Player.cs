@@ -36,13 +36,53 @@ public class Player : Actor
                 UnequipItem(i);
             }
         }
+        UpdateStat(true, item.Part == EEquipPart.Weapon, item.Stat);
         item.IsEquip = true;
     }
 
     // 아이템 해제
     public void UnequipItem(EquipItem item)
     {
+        UpdateStat(false, item.Part == EEquipPart.Weapon, item.Stat);
         item.IsEquip = false;
+    }
+    
+    /*
+     * 아이템 장착 시 스탯 추가, 해제 시 스탯 감소
+     * @param isEquipped 장착 여부
+     * @param isAttackStat 공격력인지 방어력인지
+     * @param statChange 변경할 스탯
+     */
+    public void UpdateStat(bool isEquipped, bool isAttackStat, int statChange)
+    {
+        if (isEquipped)
+        {
+            // 아이템 장착 시 스탯 추가
+            if (isAttackStat)
+            {
+                AddAttack += statChange;
+                TotalATK += statChange;
+            }
+            else
+            {
+                AddDefense += statChange;
+                TotalDEF += statChange;
+            }
+        }
+        else
+        {
+            // 아이템 해제 시 스탯 감소
+            if (isAttackStat)
+            {
+                AddAttack -= statChange;
+                TotalATK -= statChange;
+            }
+            else
+            {
+                AddDefense -= statChange;
+                TotalDEF -= statChange;
+            }
+        }
     }
     
     // 아이템 획득
