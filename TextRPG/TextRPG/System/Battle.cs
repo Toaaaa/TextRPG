@@ -12,49 +12,84 @@ public class Battle
     PriorityQueue<Actor,int> TurnQueue = new PriorityQueue<Actor, int>();
     public List<Monster>? MonsterList { get; set; }
 
-    //µ¥ÀÌÅÍ ¸®ÅÏ
-    public int GetTotalExp()//ÀüÅõ Á¾·á ÈÄ È¹µæÇÒ °æÇèÄ¡ ¹İÈ¯.
+    //ë°ì´í„° ë¦¬í„´
+    public int GetTotalExp()//ì „íˆ¬ ì¢…ë£Œ í›„ íšë“í•  ê²½í—˜ì¹˜ ë°˜í™˜.
     {
         return TotalExp;
     }
-    public int GetTotalGold()//ÀüÅõ Á¾·á ÈÄ È¹µæÇÒ °ñµå ¹İÈ¯.
+    public int GetTotalGold()//ì „íˆ¬ ì¢…ë£Œ í›„ íšë“í•  ê³¨ë“œ ë°˜í™˜.
     {
         return TotalGold;
     }
+    public List<Monster>? GetMonsterList()//í˜„ì¬ ëª¬ìŠ¤í„° ë¦¬ìŠ¤íŠ¸ ë°˜í™˜.
+    {
+        return MonsterList;
+    }
+    public int? GetMonsterCount()//í˜„ì¬ ëª¬ìŠ¤í„° ìˆ˜ ë°˜í™˜.
+    {
+        return MonsterList?.Count;
+    }
+    public string GetMonsterInfoQueue(int quenum)//ëª¬ìŠ¤í„° ì •ë³´ ë°˜í™˜.
+    {
+        if(quenum <= MonsterList?.Count-1)
+        {
+            Monster? mon = MonsterList?[quenum];
+            return $"Lv.{mon?.Level} {mon?.Name}  Hp {mon?.HP}/{mon?.MaxHp}";
+        }
+        else
+        {
+            return "ëª¬ìŠ¤í„°ê°€ ì—†ìŠµë‹ˆë‹¤.";
+        }
+    }
+    public Monster? GetMonster(int num)//ë¦¬ìŠ¤íŠ¸ ì—ì„œì˜ ëª¬ìŠ¤í„° ë°˜í™˜.
+    {
+        if(num <= MonsterList?.Count-1)
+            return MonsterList?[num];
+        else
+            return null;
+    }
+    public bool GetMonsterIsDead(int num)//ëª¬ìŠ¤í„°ê°€ ì£½ì—ˆëŠ”ì§€ ë°˜í™˜.
+    {
+        if(num <= MonsterList?.Count-1)
+            return MonsterList?[num].IsDead;
+        else
+            return false;
+    }
     /*
-    public List<Item> GetItems(List<Item> items)//ÀüÅõ Á¾·á ÈÄ È¹µæÇÒ ¾ÆÀÌÅÛ ¹İÈ¯.
+    public List<Item> GetItems(List<Item> items) //ì „íˆ¬ ì¢…ë£Œ í›„ íšë“í•  ì•„ì´í…œ ë°˜í™˜.
     {
         return items;
     }
     */
-    public string GetNowTurnName(string turn)//ÅÏÀ» ÁøÇàÇÒ °´Ã¼ ÀÌ¸§ ¹İÈ¯.
+    public string GetNowTurnName(string turn)//í„´ì„ ì§„í–‰í•  ê°ì²´ ì´ë¦„ ë°˜í™˜.
     {
         return turn;
     }
-    public bool GetIsPlayerTurn(bool turn)//ÇÃ·¹ÀÌ¾îÀÇ ÅÏÀÎÁö ¾Æ´ÑÁö ¹İÈ¯. (true: ÇÃ·¹ÀÌ¾î ÅÏ, false: ¸ó½ºÅÍ ÅÏ)
+    public bool GetIsPlayerTurn(bool turn)//í”Œë ˆì´ì–´ì˜ í„´ì¸ì§€ ì•„ë‹Œì§€ ë°˜í™˜. (true: í”Œë ˆì´ì–´ í„´, false: ëª¬ìŠ¤í„° í„´)
     {
         return turn;
     }   
-    //Çàµ¿ + ¼±ÅÃ
-    public void PlayerAttack(Player player,Monster monster)//ÇÃ·¹ÀÌ¾î°¡ °ø°İ ¼±ÅÃ½Ã È£Ãâ
+    //í–‰ë™ + ì„ íƒ
+    public void PlayerAttack(Player player,Monster monster)//í”Œë ˆì´ì–´ê°€ ê³µê²© ì„ íƒì‹œ í˜¸ì¶œ
     {
 
     }
-    public void MonsterTurn()//¸ó½ºÅÍÀÇ ÅÏ ¼±ÅÃ½Ã È£Ãâ
+    public void MonsterTurn()//ëª¬ìŠ¤í„°ì˜ í„´ ì„ íƒì‹œ í˜¸ì¶œ
     {
         MonsterAttack();
     }
-    void MonsterAttack()//¸ó½ºÅÍ°¡ °ø°İ ¼±ÅÃ½Ã È£Ãâ
+    void MonsterAttack()//ëª¬ìŠ¤í„°ê°€ ê³µê²© ì„ íƒì‹œ í˜¸ì¶œ
     {
 
     }
-    void OnMonsterDeath(Monster monster)//¸ó½ºÅÍ°¡ Á×¾úÀ» ¶§ È£Ãâ
+    void OnMonsterDeath(Monster monster)//ëª¬ìŠ¤í„°ê°€ ì£½ì—ˆì„ ë•Œ í˜¸ì¶œ
     {
         TotalExp += monster.EXP;
         TotalGold += monster.Gold;
+        //ì•„ì´í…œ ë“œë.
     }
-    //ÀüÅõ
-    private Queue<Actor> GetTurnQueue(List<Actor> actors)//ÅÏ ¼ø¼­ Á¤ÇÏ±â
+    //ì „íˆ¬
+    private Queue<Actor> GetTurnQueue(List<Actor> actors)//í„´ ìˆœì„œ ì •í•˜ê¸°
     {
         foreach (var actor in actors)
         {
@@ -62,11 +97,13 @@ public class Battle
         }
         return TurnQueue;
     }
-    private void BeforeBattle()
+    private void BeforeBattle()//ë˜ì „ ì…ì¥ì‹œ (Dungeon.EnterStage ì´í›„)
     {
         TotalExp = 0;
         TotalGold = 0;
-        //¸ó½ºÅÍ ¸®½ºÆ® °¡Á®¿À±â
+        //ëª¬ìŠ¤í„° ë¦¬ìŠ¤íŠ¸ ê°€ì ¸ì˜¤ê¸°
+        MonsterList = Dungeon().GetMonsterList();//ì˜¤ë¸Œì íŠ¸ ì»¨í…ìŠ¤íŠ¸ì—ì„œ í˜„ì¬ ë˜ì „ ëª¬ìŠ¤í„° ê°€ì ¸ì˜¤ê¸°
+        MonsterList.Sort((x, y) => y.Speed.CompareTo(x.Speed));//ëª¬ìŠ¤í„° ì†ë„ê°€ ë¹ ë¥¸ ìˆœìœ¼ë¡œ ì •ë ¬
         TurnQueue = GetTurnQueue(actors);
     }
     private void StartBattle()
@@ -74,7 +111,7 @@ public class Battle
 
     }
 
-    // 1. ÀüÅõ ½ÃÀÛÀü ¸ğµç °´Ã¼µéÀÇ ¼Óµµ°ªÀ» °¡Á®¿Í ÅÏ ¼ø¼­¸¦ Á¤ÇÑ´Ù (»ç¸Á½Ã Á¦¿Ü)
-    // 2. ÅÏ ¼ø¼­°¡ Á¤ÇØÁö¸é ¼ø¼­¿¡ ¸ÂÃç °´Ã¼µéÀÌ Çàµ¿À» ¼±ÅÃÇÑ´Ù. (@@ÀÇ ÅÏ)
-    // 3. Çàµ¿À» ¼±ÅÃÇÑ °´Ã¼µéÀÌ Çàµ¿À» ¼öÇàÇÑ´Ù.
+    // 1. ì „íˆ¬ ì‹œì‘ì „ ëª¨ë“  ê°ì²´ë“¤ì˜ ì†ë„ê°’ì„ ê°€ì ¸ì™€ í„´ ìˆœì„œë¥¼ ì •í•œë‹¤ (ì‚¬ë§ì‹œ ì œì™¸)
+    // 2. í„´ ìˆœì„œê°€ ì •í•´ì§€ë©´ ìˆœì„œì— ë§ì¶° ê°ì²´ë“¤ì´ í–‰ë™ì„ ì„ íƒí•œë‹¤. (@@ì˜ í„´)
+    // 3. í–‰ë™ì„ ì„ íƒí•œ ê°ì²´ë“¤ì´ í–‰ë™ì„ ìˆ˜í–‰í•œë‹¤.
 }
