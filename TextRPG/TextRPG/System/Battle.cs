@@ -15,7 +15,7 @@ public class Battle
     private List<Actor> actors = new List<Actor>();
     
 
-    public Action<Player, Monster>? PlayerAction { get; set; }
+    public static Action<Player, Monster>? PlayerAction { get; set; }
 
     //데이터 리턴
     public int GetTotalExp()//전투 종료 후 획득할 경험치 반환.
@@ -38,12 +38,17 @@ public class Battle
     {
         return MonsterList?.Count;
     }
-    public string GetMonsterInfoQueue(int quenum)//몬스터 정보 반환.
+    public string GetMonsterInfoQueue(int quenum)//존재하는 몬스터 정보 반환.
     {
         if(quenum <= MonsterList?.Count-1)
         {
             Monster? mon = MonsterList?[quenum];
-            return $"Lv.{mon?.Level} {mon?.Name}  Hp {mon?.HP}/{mon?.MaxHP}";
+            string result = $"Lv.{mon?.Level} {mon?.Name}  ";
+            if(mon?.IsDead == true)
+                result += "Dead";
+            else
+                result += $"Hp {mon?.HP}/{mon?.MaxHP}";
+            return result;
         }
         else
         {
@@ -64,9 +69,9 @@ public class Battle
         else
             return false;
     }
-    public bool GetIsPlayerTurn(bool turn)//플레이어의 턴인지 아닌지 반환. (true: 플레이어 턴, false: 몬스터 턴)
+    public bool GetIsPlayerTurn()//플레이어의 턴인지 아닌지 반환. (true: 플레이어 턴, false: 몬스터 턴)
     {
-        return turn;
+        return TurnQueue.Peek().GetType() == typeof(Player);
     }   
     //행동 + 선택
     public void PlayerAttack(Monster monster)//플레이어가 공격 선택시 호출
@@ -108,18 +113,23 @@ public class Battle
         }
         return TurnQueue;
     }
-    private void BeforeBattle()//던전 입장시 (Dungeon.EnterStage 이후)
+    public void BeforeBattle()//던전 입장시 가장 먼저 호출.
     {
         TotalExp = 0;
         TotalGold = 0;
-        //몬스터 리스트 가져오기
-        MonsterList = ObjectContext.Instance.Dungeon.GetMonsterList();//오브젝트 컨텍스트에서 현재 던전 몬스터 가져오기
+        MonsterList = ObjectContext.Instance.Dungeon.GetMonsterList();//현재 던전 몬스터 가져오기
         MonsterList?.Sort((x, y) => y.SPD.CompareTo(x.SPD));//몬스터 속도가 빠른 순으로 정렬
         actors.Add(ObjectContext.Instance.Player);//플레이어 추가
         if(MonsterList != null)
             actors.AddRange(MonsterList);//몬스터 추가
         TurnQueue = GetTurnQueue(actors);//턴 순서 정하기
     }
+    public void BattleTurn()//턴 진행시 호출
+    {
+        TurnStart();
+        TurnEnd();
+    }
+
     public void TurnStart()//턴 시작시 호출
     {
         if (TurnQueue.Count == 0)
@@ -127,12 +137,13 @@ public class Battle
             TurnQueue = GetTurnQueue(actors);
         }
         Actor actor = TurnQueue.Dequeue();
-        if (actor is Player && TargetMonster != null)
+        if (actor is Player && TargetMonster != null)//플레이어 턴일 때
         {
-            //PlayerAction?.Invoke((Player)actor; //타겟 몬스터);
+            //PlayerAction?.Invoke((Player)actor,TargetMonster);
+            //PlayerAction = null;
             PlayerAttack(TargetMonster);
         }
-        else
+        else//몬스터 턴일 때
         {
             MonsterTurn(ObjectContext.Instance.Player, (Monster)actor);
         }
