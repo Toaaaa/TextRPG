@@ -36,13 +36,19 @@ namespace TextRPG.Objects.Shop
 
         //public
 
+        //플레이어 소유여부 확인
+        public bool CheckPlayerHave(Item _CheckItem)
+        {
+            return ObjectContext.Instance.Player.Inventory.Any(item => item.Name == _CheckItem.Name);
+        }
+
         //장비 구매
         public void BuyEquipItem(int _Choice)
         {
             EquipItem equipItem = (EquipItem)EquipItemShop[_Choice - 1];
             if (equipItem != null)
             {
-                if (ObjectContext.Instance.Player.Inventory.Any(item => item.Name == equipItem.Name))
+                if (CheckPlayerHave(equipItem))
                 {
                     Console.WriteLine("이미 구매한 장비입니다.");
                 }
@@ -67,7 +73,7 @@ namespace TextRPG.Objects.Shop
             ConsumItem consumItem = (ConsumItem)ConsumItemShop[_Choice - 1];
             if (consumItem != null)
             {
-                if (ObjectContext.Instance.Player.Inventory.Any(item => item.Name == consumItem.Name))
+                if (CheckPlayerHave(consumItem))
                 {
                     if (ObjectContext.Instance.Player.Gold > consumItem.Price)
                     {
@@ -97,7 +103,7 @@ namespace TextRPG.Objects.Shop
 
         public void SellItem(int _Choice)
         {
-
+            
         }
 
         //private
