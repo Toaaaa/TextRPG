@@ -5,6 +5,7 @@ namespace TextRPG;
 
 public class Battle
 {
+    public int LastDamage { get; set; }//마지막 행동이 가한 데미지를 저장.
     private int TotalExp { get; set; }
     private int TotalGold { get; set; }
     public List<Item>? RewardItems { get; set; }
@@ -78,15 +79,18 @@ public class Battle
     {
         int realdmg = ObjectContext.Instance.Player.CalcDamage() * (1 - (monster.DEF / 25 + monster.DEF)); //방어상수 25.
         monster.TakeDamage(realdmg);
+        LastDamage = realdmg;
     }
     public void MonsterTurn(Player player, Monster monster)//몬스터의 턴 선택시 호출
     {
         MonsterAttack(player,monster);
+        //추후 스킬 등의 기능..
     }
     void MonsterAttack(Player player,Monster monster)//몬스터가 공격 선택시 호출
     {
         int realdmg = monster.CalcDamage() * (1 - (player.TotalDEF / 25 + player.TotalDEF)); //방어상수 25.
         player.TakeDamage(realdmg);
+        LastDamage = realdmg;
     }
     void OnMonsterDeath(Monster monster)//몬스터가 죽었을 때 호출
     {
