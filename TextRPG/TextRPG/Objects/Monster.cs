@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using TextRPG.Objects;
 
 // 몬스터 기본 클래스
 public class Monster : Actor
