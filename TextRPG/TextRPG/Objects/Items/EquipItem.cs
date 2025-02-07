@@ -5,14 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-enum EEquipPart
+public enum EEquipPart
 {
     None,
     Weapon,
     Armor,
 }
 
-namespace TextRPG.Item
+namespace TextRPG.Objects.Items
 {
     public class EquipItem : Item
     {
@@ -20,7 +20,7 @@ namespace TextRPG.Item
         {
         }
 
-        public EquipItem(string _Name, int _Status, EEquipPart _Part) 
+        public EquipItem(string _Name, int _Status, EEquipPart _Part)
         {
             Name = _Name;
             Part = _Part;
@@ -37,12 +37,13 @@ namespace TextRPG.Item
             {
                 //Debug.Assert(false);
             }
+            IsEquip = false;
         }
 
-        public EEquipPart Part { get; private set; }
+        public EEquipPart Part { get; set; }
 
-        public int Atk { get; private set; }
-        public int Def { get; private set; }
+        public int Atk { get; set; }
+        public int Def { get; set; }
 
         public bool IsEquip { get; set; }
     }

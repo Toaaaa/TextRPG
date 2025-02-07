@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TextRPG.Item
+namespace TextRPG.Objects.Items
 {
     public class Item
     {
         public Item() { }
 
-        protected string Name;
-        protected string Explain;
-        protected int Price;
-
+        public string Name { get; set; }
+        public string Explain { get; set; }
+        public int Price { get; set; }
     }
 }
