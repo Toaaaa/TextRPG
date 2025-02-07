@@ -4,13 +4,13 @@
     "Explain": "쉽게 볼 수 있는 낡은 검 입니다.",
     "Price": 600,
     "Part": "Weapon",
-    "Atk": 2
+    "Stat": 2
   },
   "수련자 갑옷": {
     "Name": "수련자 갑옷",
     "Explain": "수련에 도움을 주는 갑옷입니다.",
     "Price": 1000,
     "Part": "Armor",
-    "Def": 5
+    "Stat": 5
   }
 }

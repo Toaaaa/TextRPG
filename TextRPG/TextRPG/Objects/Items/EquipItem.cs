@@ -20,30 +20,18 @@ namespace TextRPG.Objects.Items
         {
         }
 
-        public EquipItem(string _Name, int _Status, EEquipPart _Part)
+        public EquipItem(string _Name, int _Stat, EEquipPart _Part)
         {
             Name = _Name;
             Part = _Part;
 
-            if (_Part == EEquipPart.Weapon)
-            {
-                Atk = _Status;
-            }
-            else if (_Part == EEquipPart.Armor)
-            {
-                Def = _Status;
-            }
-            else
-            {
-                //Debug.Assert(false);
-            }
+            Stat = _Stat;  
             IsEquip = false;
         }
 
         public EEquipPart Part { get; set; }
 
-        public int Atk { get; set; }
-        public int Def { get; set; }
+        public int Stat { get; set; }
 
         public bool IsEquip { get; set; }
     }
