@@ -135,11 +135,6 @@ public class Page
                                 _router.PopState();
                                 break;
                             case 1:
-                                string a = ObjectContext.Instance.Shop.BuyEquipItem(1);
-                                int b = 0;
-                                break;
-                            case 2:
-                                ObjectContext.Instance.Shop.SellItem(0);
                                 break;
                         }
                     })

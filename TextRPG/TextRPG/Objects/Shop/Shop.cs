@@ -124,7 +124,6 @@ namespace TextRPG.Objects.Shop
                 {
                     ObjectContext.Instance.Player.Gold += (int)(equipItem.Price * 0.85);
                     ObjectContext.Instance.Player.RemoveItem(equipItem);
-                    int a = 0;
                 }
                 else if (playerInven[_Choice] is ConsumItem consumItem)
                 {
