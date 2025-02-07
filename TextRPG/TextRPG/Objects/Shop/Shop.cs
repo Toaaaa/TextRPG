@@ -43,14 +43,14 @@ namespace TextRPG.Objects.Shop
         }
 
         //장비 구매
-        public void BuyEquipItem(int _Choice)
+        public string BuyEquipItem(int _Choice)
         {
             EquipItem equipItem = (EquipItem)EquipItemShop[_Choice - 1];
             if (equipItem != null)
             {
                 if (CheckPlayerHave(equipItem))
                 {
-                    Console.WriteLine("이미 구매한 장비입니다.");
+                    return "이미 구매한 장비입니다.";
                 }
                 else
                 {
@@ -58,17 +58,23 @@ namespace TextRPG.Objects.Shop
                     {
                         ObjectContext.Instance.Player.GetItem(equipItem);
                         ObjectContext.Instance.Player.Gold -= equipItem.Price;
+
+                        return $"{equipItem.Name}을/를 1개 구매하였습니다.";
                     }
                     else
                     {
-                        Console.WriteLine("금액이 부족합니다.");
+                        return "금액이 부족합니다.";
                     }
                 }
+            }
+            else
+            {
+                return "존재하지 않는 아이템입니다.";
             }
         }
 
         //소모품 구매
-        public void BuyConsumItem(int _Choice)
+        public string BuyConsumItem(int _Choice)
         {
             ConsumItem consumItem = (ConsumItem)ConsumItemShop[_Choice - 1];
             if (consumItem != null)
@@ -80,10 +86,12 @@ namespace TextRPG.Objects.Shop
                         ConsumItem CItem = ObjectContext.Instance.Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
                         CItem.Num += 1;
                         ObjectContext.Instance.Player.Gold -= consumItem.Price;
+
+                        return $"{consumItem.Name}을/를 1개 구매하였습니다.";
                     }
                     else
                     {
-                        Console.WriteLine("금액이 부족합니다.");
+                        return "금액이 부족합니다.";
                     }
                 }
                 else
@@ -92,18 +100,26 @@ namespace TextRPG.Objects.Shop
                     {
                         ObjectContext.Instance.Player.GetItem(consumItem);
                         ObjectContext.Instance.Player.Gold -= consumItem.Price;
+
+                        return $"{consumItem.Name}을/를 1개 구매하였습니다.";
                     }
                     else
                     {
-                        Console.WriteLine("금액이 부족합니다.");
+                        return "금액이 부족합니다.";
                     }
                 }
             }
+            else
+            {
+                return "존재하지 않는 아이템입니다.";
+            }
         }
 
+        //아이템 판매
         public void SellItem(int _Choice)
         {
-            
+            List<Item> PlayerInven = ObjectContext.Instance.Player.Inventory;
+            ObjectContext.Instance.Player.RemoveItem(PlayerInven[_Choice]);
         }
 
         //private
