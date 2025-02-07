@@ -29,6 +29,7 @@ namespace TextRPG.Objects.Items
             IsEquip = false;
         }
 
+        //public
         public EEquipPart Part { get; set; }
 
         public int Stat { get; set; }

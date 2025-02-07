@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Collections.Specialized;
 using TextRPG.Objects.Items;
+using TextRPG.Objects;
 using System.Collections;
 using System.IO;
 using System.Text.Json.Serialization;
@@ -25,11 +26,81 @@ namespace TextRPG.Objects.Shop
             LoadItem();
         }
 
+        //public
+
+        //모든 아이템 보관하는 Dictionary
         public Dictionary<string, Item> AllItem;
 
-        public OrderedDictionary EquipItemShop;
-        public OrderedDictionary ConsumItemShop;
+        public OrderedDictionary EquipItemShop { get; }
+        public OrderedDictionary ConsumItemShop { get; }
 
+        //public
+
+        //장비 구매
+        public void BuyEquipItem(int _Choice)
+        {
+            EquipItem equipItem = (EquipItem)EquipItemShop[_Choice - 1];
+            if (equipItem != null)
+            {
+                if (ObjectContext.Instance.Player.Inventory.Any(item => item.Name == equipItem.Name))
+                {
+                    Console.WriteLine("이미 구매한 장비입니다.");
+                }
+                else
+                {
+                    if (ObjectContext.Instance.Player.Gold > equipItem.Price)
+                    {
+                        ObjectContext.Instance.Player.GetItem(equipItem);
+                        ObjectContext.Instance.Player.Gold -= equipItem.Price;
+                    }
+                    else
+                    {
+                        Console.WriteLine("금액이 부족합니다.");
+                    }
+                }
+            }
+        }
+
+        //소모품 구매
+        public void BuyConsumItem(int _Choice)
+        {
+            ConsumItem consumItem = (ConsumItem)ConsumItemShop[_Choice - 1];
+            if (consumItem != null)
+            {
+                if (ObjectContext.Instance.Player.Inventory.Any(item => item.Name == consumItem.Name))
+                {
+                    if (ObjectContext.Instance.Player.Gold > consumItem.Price)
+                    {
+                        ConsumItem CItem = ObjectContext.Instance.Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
+                        CItem.Num += 1;
+                        ObjectContext.Instance.Player.Gold -= consumItem.Price;
+                    }
+                    else
+                    {
+                        Console.WriteLine("금액이 부족합니다.");
+                    }
+                }
+                else
+                {
+                    if (ObjectContext.Instance.Player.Gold > consumItem.Price)
+                    {
+                        ObjectContext.Instance.Player.GetItem(consumItem);
+                        ObjectContext.Instance.Player.Gold -= consumItem.Price;
+                    }
+                    else
+                    {
+                        Console.WriteLine("금액이 부족합니다.");
+                    }
+                }
+            }
+        }
+
+        public void SellItem(int _Choice)
+        {
+
+        }
+
+        //private
         private void LoadItem()
         {
             string filePath;
@@ -59,7 +130,7 @@ namespace TextRPG.Objects.Shop
                     EquipItem item = data.Value;
 
                     AllItem[key] = item;
-                    
+
                     EquipItemShop[key] = item;
                 }
             }

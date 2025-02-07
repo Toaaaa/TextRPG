@@ -24,10 +24,12 @@ namespace TextRPG.Objects.Items
             Num = 1;
         }
 
+        //public
         public EConsumItem Category { get; set; }
 
         public int Num { get; set; }
 
+        //public
         public void UseItem(Player _player, EConsumItem _Category)
         {
             switch (_Category)

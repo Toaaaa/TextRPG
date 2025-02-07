@@ -10,6 +10,7 @@ namespace TextRPG.Objects.Items
     {
         public Item() { }
 
+        //public
         public string Name { get; set; }
         public string Explain { get; set; }
         public int Price { get; set; }
