@@ -1,54 +1,48 @@
+using TextRPG.Objects.Items;
+
 namespace TextRPG.Objects;
 
-public class Player
+public class Player : Actor
 {
-    public int playerLevel { get; set; }
-    public string playerName { get; set; }
-    public int Attack { get; set; }
     public int AddAttack { get; set; }
-    public int Defense { get; set; }
     public int AddDefense { get; set; }
-    public int HP { get; set; }
     public int AddHP { get; set; }
-    public int Gold { get; set; }
-    public int Exp { get; set; }
-    public int Speed { get; set; }
     public List<Item> Inventory { get; set; }
 
     public Player(string name)
     {
-        playerLevel = 1;
-        playerName = name;
-        Attack = 10;
+        Level = 1;
+        Name = name;
+        ATK = 10;
         AddAttack = 0;
-        Defense = 5;
+        DEF = 5;
         AddDefense = 0;
+        MaxHP = 50;
         HP = 50;
         AddHP = 0;
         Gold = 1500;
-        Exp = 0;
-        Speed = 5;
+        EXP = 0;
+        SPD = 5;
         Inventory = new List<Item>();
     }
     
     // 아이템 장착
-    public void EquipItem(Item item)
+    public void EquipItem(EquipItem item)
     {
-        // 기존에 장착된 아이템중 동일한 타입의 아이템이 있다면 해제하고 장착
-        foreach (var i in Inventory)
+        foreach (var i in Inventory.OfType<EquipItem>()) // EquipItem만 필터링
         {
-            if (i.Type == item.Type && i.IsEquipped)
+            if (i.Part == item.Part && i.IsEquip)
             {
                 UnequipItem(i);
             }
         }
-        item.IsEquipped = true;
+        item.IsEquip = true;
     }
 
     // 아이템 해제
-    public void UnequipItem(Item item)
+    public void UnequipItem(EquipItem item)
     {
-        item.IsEquipped = false;
+        item.IsEquip = false;
     }
     
     // 아이템 획득
@@ -67,7 +61,7 @@ public class Player
     public float CalcDamage()
     {
         var random = new Random();
-        var damage = (Attack + AddAttack) * (random.Next(90, 111) / 100);
+        var damage = (ATK + AddAttack) * (random.Next(90, 111) / 100);
         return damage;
     }
     
@@ -80,18 +74,20 @@ public class Player
     
     public bool LevelUp()
     {
-        playerLevel++;
-        Attack += 5;
-        Defense += 2;
-        Exp = 0;
+        Level++;
+        MaxHP += Level * 5;
+        HP = MaxHP;
+        ATK += 5;
+        DEF += 2;
+        EXP = 0;
         return true;
     }
     
     public bool GetExp(int exp)
     {
         bool isLevelUp = false;
-        Exp += exp;
-        if (Exp >= playerLevel * 100)
+        EXP += exp;
+        if (EXP >= Level * 100)
         {
             isLevelUp = LevelUp();
         }
