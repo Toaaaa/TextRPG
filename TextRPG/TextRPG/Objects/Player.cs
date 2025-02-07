@@ -7,12 +7,14 @@ public class Player : Actor
     public int AddAttack { get; set; }
     public int AddDefense { get; set; }
     public int AddHP { get; set; }
+    public string Class { get; set; }
     public List<Item> Inventory { get; set; }
 
     public Player(string name)
     {
         Level = 1;
         Name = name;
+        Class = "Warrior";
         TotalATK = 10;
         AddAttack = 0;
         TotalDEF = 5;
@@ -98,7 +100,7 @@ public class Player : Actor
     }
     
     // 데미지 계산
-    public float CalcDamage()
+    public int CalcDamage()
     {
         var random = new Random();
         var damage = (TotalATK) * (random.Next(90, 111) / 100);
@@ -106,7 +108,7 @@ public class Player : Actor
     }
     
     // 데미지 받아서 체력 -
-    public float TakeDamage(int damage)
+    public int TakeDamage(int damage)
     {
         HP = (HP <= damage) ? 0 : HP - damage;
         return HP;

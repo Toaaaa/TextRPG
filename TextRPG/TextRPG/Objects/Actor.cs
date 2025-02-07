@@ -13,7 +13,7 @@ public class Actor
     public int SPD { get; set; }
     
     // 데미지 계산
-    public virtual float CalcDamage()
+    public virtual int CalcDamage()
     {
         var random = new Random();
         var damage = TotalATK * (random.Next(90, 111) / 100);
@@ -21,7 +21,7 @@ public class Actor
     }
     
     // 데미지 받아서 체력 -
-    public virtual float TakeDamage(int damage)
+    public virtual int TakeDamage(int damage)
     {
         HP = (HP <= damage) ? 0 : HP - damage;
         return HP;
