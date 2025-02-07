@@ -2,12 +2,20 @@ namespace TextRPG.Objects;
 
 public class Dungeon
 {
+    static List<Monster> _monsters = new List<Monster> //추후 각 몬스터들이 담긴 프리셋은 Monster.cs에서 던전별 프리셋으로 구현 요망.
+    {
+        new Monster("달팽이", 1, 10, 2, 0, 1, 1),
+        new Monster("고블린", 3, 25, 5, 0, 1, 2),
+        new Monster("오크", 5, 50, 2, 2, 3, 5),
+        new Monster("골렘", 10, 200, 10, 5, 2, 8),
+    };
+
     List<Stage> stages = new List<Stage>
     {
-        new Stage("초급 던전"),
-        new Stage("중급 던전"),
-        new Stage("고급 던전"),
-        new Stage("심연 던전"),
+        new Stage("초급 던전",_monsters),
+        new Stage("중급 던전",_monsters),
+        new Stage("고급 던전",_monsters),
+        new Stage("심연 던전",_monsters),
     };
 
     private Stage? CurrentStage { get; set; }
@@ -51,12 +59,13 @@ public class Dungeon
 public class Stage
 {
     public string Name { get; set; }
-    public Stage(string name/*, List<Monster> monsters*/)
+    List<Monster> monsters = new List<Monster>();
+
+    public Stage(string name, List<Monster> monsters)
     {
         Name = name;
-        //this.monsters = monsters;
+        this.monsters = monsters;
     }
-    List<Monster> monsters = new List<Monster>();
     public List<Monster> MonsterSet()//몬스터 셋 메서드
     {
         return monsters;
