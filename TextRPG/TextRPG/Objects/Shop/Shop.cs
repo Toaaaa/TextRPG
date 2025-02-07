@@ -22,12 +22,10 @@ namespace TextRPG.Objects.Shop
 
             EquipItemShop = new OrderedDictionary();
             ConsumItemShop = new OrderedDictionary();
-
             LoadItem();
         }
 
         //public
-        public Player Player = ObjectContext.Instance.Player;
         //모든 아이템 보관하는 Dictionary
         public Dictionary<string, Item> AllItem;
 
@@ -39,7 +37,7 @@ namespace TextRPG.Objects.Shop
         //플레이어 소유여부 확인
         public bool CheckPlayerHave(Item _CheckItem)
         {
-            return Player.Inventory.Any(item => item.Name == _CheckItem.Name);
+            return ObjectContext.Instance.Player.Inventory.Any(item => item.Name == _CheckItem.Name);
         }
 
         //장비 구매
@@ -54,10 +52,10 @@ namespace TextRPG.Objects.Shop
                 }
                 else
                 {
-                    if (Player.Gold > equipItem.Price)
+                    if (ObjectContext.Instance.Player.Gold > equipItem.Price)
                     {
-                        Player.GetItem(equipItem);
-                        Player.Gold -= equipItem.Price;
+                        ObjectContext.Instance.Player.GetItem(equipItem);
+                        ObjectContext.Instance.Player.Gold -= equipItem.Price;
 
                         return $"{equipItem.Name}을/를 1개 구매하였습니다.";
                     }
@@ -81,11 +79,11 @@ namespace TextRPG.Objects.Shop
             {
                 if (CheckPlayerHave(consumItem))
                 {
-                    if (Player.Gold > consumItem.Price)
+                    if (ObjectContext.Instance.Player.Gold > consumItem.Price)
                     {
-                        ConsumItem cItem = Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
+                        ConsumItem cItem = ObjectContext.Instance.Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
                         cItem.Num += 1;
-                        Player.Gold -= consumItem.Price;
+                        ObjectContext.Instance.Player.Gold -= consumItem.Price;
 
                         return $"{consumItem.Name}을/를 1개 구매하였습니다.";
                     }
@@ -96,10 +94,10 @@ namespace TextRPG.Objects.Shop
                 }
                 else
                 {
-                    if (Player.Gold > consumItem.Price)
+                    if (ObjectContext.Instance.Player.Gold > consumItem.Price)
                     {
-                        Player.GetItem(consumItem);
-                        Player.Gold -= consumItem.Price;
+                        ObjectContext.Instance.Player.GetItem(consumItem);
+                        ObjectContext.Instance.Player.Gold -= consumItem.Price;
 
                         return $"{consumItem.Name}을/를 1개 구매하였습니다.";
                     }
@@ -118,25 +116,26 @@ namespace TextRPG.Objects.Shop
         //아이템 판매
         public void SellItem(int _Choice)
         {
-            List<Item> playerInven = Player.Inventory;
+            List<Item> playerInven = ObjectContext.Instance.Player.Inventory;
 
             if (null != playerInven[_Choice])
             {
                 if (playerInven[_Choice] is EquipItem equipItem)
                 {
-                    Player.Gold += (int)(equipItem.Price * 0.85);
-                    Player.RemoveItem(equipItem);
+                    ObjectContext.Instance.Player.Gold += (int)(equipItem.Price * 0.85);
+                    ObjectContext.Instance.Player.RemoveItem(equipItem);
+                    int a = 0;
                 }
                 else if (playerInven[_Choice] is ConsumItem consumItem)
                 {
                     if (1 == consumItem.Num)
                     {
-                        Player.Gold += (int)(consumItem.Price * 0.85);
-                        Player.RemoveItem(consumItem);
+                        ObjectContext.Instance.Player.Gold += (int)(consumItem.Price * 0.85);
+                        ObjectContext.Instance.Player.RemoveItem(consumItem);
                     }
                     else if (1 < consumItem.Num)
                     {
-                        Player.Gold += (int)(consumItem.Price * 0.85);
+                        ObjectContext.Instance.Player.Gold += (int)(consumItem.Price * 0.85);
                         consumItem.Num -= 1;
                     }
                 }
