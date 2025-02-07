@@ -10,6 +10,7 @@ public class Battle
     private int TotalGold { get; set; }
     public List<Item>? RewardItems { get; set; }
     public Monster? TargetMonster { get; set; }
+    public Actor? CurrentActor { get; set; }
 
     public PriorityQueue<Actor,int> TurnQueue = new PriorityQueue<Actor, int>();
     public List<Monster>? MonsterList = new List<Monster>();
@@ -142,6 +143,7 @@ public class Battle
             TurnQueue = GetTurnQueue(actors);
         }
         Actor actor = TurnQueue.Dequeue();
+        CurrentActor = actor;
         if (actor is Player && TargetMonster != null)//플레이어 턴일 때
         {
             //PlayerAction?.Invoke((Player)actor,TargetMonster);
