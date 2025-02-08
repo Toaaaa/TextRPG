@@ -30,9 +30,7 @@ public class Renderer
         this.Content();
         if (_isInvalid)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("\n잘못된 선택입니다.");
-            Console.ResetColor();
+            Logger.WriteLine("\n잘못된 선택입니다.", ConsoleColor.Red);
             _isInvalid = false;
         }
         // fix: 선택 문구도 달라질 수 있음.
