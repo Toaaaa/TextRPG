@@ -37,7 +37,7 @@ public class Page
                 new Renderer((context, states) =>
                 {
                     var mode = states.Get<string>("MODE").Init("NAME");
-                    Player player = ObjectContext.Get<Player>();
+                    Player player = ObjectContext.Instance.Player;
                     
                     context.Content = () =>
                     {
@@ -128,7 +128,7 @@ public class Page
                 PageType.STATUS_PAGE,
                 new Renderer((context, states) =>
                     {
-                        Player player = ObjectContext.Get<Player>();
+                        Player player = ObjectContext.Instance.Player;
             
                         context.Content = () =>
                         {
@@ -156,7 +156,7 @@ public class Page
                 PageType.INVENTORY_PAGE,
                 new Renderer((context, states) =>
                 {
-                    List<Item> inventory = ObjectContext.Get<Player>().Inventory;
+                    List<Item> inventory = ObjectContext.Instance.Player.Inventory;
                     var mode = states.Get<string>("MODE").Init("VIEW");
 
                     context.Content = () =>
@@ -191,8 +191,8 @@ public class Page
                 PageType.SHOP_PAGE,
                 new Renderer((context, states) =>
                 {
-                    Shop shop = ObjectContext.Get<Shop>();
-                    Player player = ObjectContext.Get<Player>();
+                    Shop shop = ObjectContext.Instance.Shop;
+                    Player player = ObjectContext.Instance.Player;
                     var itemsList = new List<Item>(shop.AllItem.Values);
 
                     var mode = states.Get<string>("MODE").Init("VIEW");
@@ -229,8 +229,8 @@ public class Page
                 PageType.DUNGEON_PAGE,
                 new Renderer((context, states) =>
                 {
-                    Dungeon dungeon = ObjectContext.Get<Dungeon>();
-                    Battle battle = ObjectContext.Get<Battle>();
+                    Dungeon dungeon = ObjectContext.Instance.Dungeon;
+                    Battle battle = ObjectContext.Instance.Battle;
 
                     context.Content = () =>
                     {
@@ -276,29 +276,6 @@ public class Page
 
                         };
                     })
-                    // .SetChoices((store, selection) =>
-                    // {
-                    //     Battle battle = ObjectContext.Instance.Battle;
-                    //     Dungeon dungeon = ObjectContext.Instance.Dungeon;
-                    //
-                    //     bool isPlayerTurn = battle.GetIsPlayerTurn();
-                    //     List<Monster> monsters = dungeon.GetMonsterList();
-                    //
-                    //     // 잘못 고른 경우
-                    //     // if(selection < 0 || selection > monsters.Count)
-                    //     if (isPlayerTurn)
-                    //     { 
-                    //         // 플레이어 액션과 타입이 다름.
-                    //         battle.SetTargetMonster(selection - 1);
-                    //         battle.TurnStart();
-                    //
-                    //     }
-                    //         
-                    //     else if(!isPlayerTurn)
-                    //     {
-                    //         battle.TurnStart();
-                    //     }
-                    // })
             },
         };    
     }   
