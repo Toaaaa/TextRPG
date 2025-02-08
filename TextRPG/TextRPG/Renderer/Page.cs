@@ -45,12 +45,14 @@ public class Page
                         _router.Navigate(PageType.START_PAGE);
 
                         Console.WriteLine($"스파르타 던전에 오신 여러분 환영합니다.");
-                        if(mode.GetValue() == "NAME") Console.WriteLine($"원하시는 이름을 설정해주세요.");
-                        if (mode.GetValue() == "CLASS")
-                        {
-                            Console.WriteLine($"{player.Name}님 원하시는 직업을 선택해주세요.\n");
-                            Console.WriteLine("1.전사\n2.궁수\n3.도적\n4.마법사");
-                        }
+                        
+                        if(mode.GetValue() == "NAME") 
+                            Console.WriteLine($"원하시는 이름을 설정해주세요.");
+                        
+                        if (mode.GetValue() == "CLASS") 
+                            Console.WriteLine(
+                                $"{player.Name}님 원하시는 직업을 선택해주세요.\n\n" +
+                                $"1.전사\n2.궁수\n3.도적\n4.마법사");
                     };
                     context.Choice = () =>
                     {
@@ -96,9 +98,10 @@ public class Page
                 {
                     context.Content = () =>
                     {
-                        Console.WriteLine($"스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.");
-                        Console.WriteLine("\n1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 던전입장\n");
-                        Console.WriteLine("원하시는 행동을 입력해주세요. >>");
+                        Console.WriteLine(
+                            $"스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n" +
+                            $"1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 던전입장\n\n" +
+                            $"원하시는 행동을 입력해주세요. >>");
                     };
                     
                     context.Choice = () =>
@@ -132,10 +135,18 @@ public class Page
             
                         context.Content = () =>
                         {
-                            Console.WriteLine($"상태 보기\n\n캐릭터의 정보가 표시됩니다.\n");
-                            Console.WriteLine($"Lv. {player.Name}\nChad ( {player.Class} )\n공격력 : {player.TotalATK}\n방어력 : {player.TotalDEF}\n체 력 : {player.MaxHP}\nGold : {player.Gold} G\n");
-                            Console.WriteLine("0. 나가기");
-                            Console.WriteLine("\n원하시는 행동을 입력해주세요. >>");
+                            Console.WriteLine(
+                                $"상태 보기\n" +
+                                $"캐릭터의 정보가 표시됩니다.\n\n" +
+                                $"Lv. {player.Level}\n" +
+                                $"Chad ( {player.Class} )\n" +
+                                $"이름 : {player.Name}\n" +
+                                $"공격력 : {player.TotalATK}\n" +
+                                $"방어력 : {player.TotalDEF}\n" +
+                                $"체 력 : {player.MaxHP}\n" +
+                                $"Gold : {player.Gold} G\n\n" +
+                                $"0. 나가기\n\n" +
+                                $"원하시는 행동을 입력해주세요. >>\n");
                         };
             
                         context.Choice = () =>
@@ -161,13 +172,20 @@ public class Page
 
                     context.Content = () =>
                     {
-                        Console.WriteLine($"인벤토리\n보유 중인 아이템을 관리할 수 있습니다.\n\n[아이템 목록]");
+                        Console.WriteLine(
+                            $"인벤토리\n" +
+                            $"보유 중인 아이템을 관리할 수 있습니다.\n\n" +
+                            $"[아이템 목록]");
+                        
                         for (int i = 0; i < inventory.Count; i++)
                         {
                             Item item = inventory[i];
                             Console.WriteLine($"{i + 1}. {item.Name} | {item.Explain} | {item.Price}");
                         }
-                        Console.WriteLine("\n\n1. 장착 관리\n2. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                        
+                        Console.WriteLine(
+                            "\n\n1. 장착 관리\n2. 나가기\n\n" +
+                            "원하시는 행동을 입력해주세요. >>");
                     };
                     
                     context.Choice = () =>
@@ -199,13 +217,20 @@ public class Page
 
                     context.Content = () =>
                     {
-                        Console.WriteLine($"상점\n필요한 아이템을 얻을 수 있는 상점입니다.\n\n[보유 골드]\n{player.Gold} G\n\n");
+                        Console.WriteLine(
+                            $"상점\n" +
+                            $"필요한 아이템을 얻을 수 있는 상점입니다.\n\n" +
+                            $"[보유 골드]\n{player.Gold} G\n\n");
+                        
                         for (int i = 0; i < itemsList.Count; i++)
                         {
                             var item = itemsList[i];
                             Console.WriteLine($"{i}. {item.Name}");
                         }
-                        Console.WriteLine("\n\n1. 구매하기\n2. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                        
+                        Console.WriteLine(
+                            "\n\n1. 구매하기\n2. 나가기\n\n" +
+                            "원하시는 행동을 입력해주세요. >>");
                     };
                     
                     context.Choice = () =>
@@ -234,7 +259,10 @@ public class Page
 
                     context.Content = () =>
                     {
-                        Console.WriteLine("던전 입장\n던전을 선택해주세요.\n");
+                        Console.WriteLine(
+                            "던전 입장\n" +
+                            "던전을 선택해주세요.\n");
+                        
                         for (int index = 0; index < dungeon.stages.Count; index++)
                         {
                             Console.WriteLine($"{index + 1}. {dungeon.stages[index].Name}");      
@@ -258,22 +286,81 @@ public class Page
                 PageType.BATTLE_PAGE,
                 new Renderer((context, states) =>
                     {
-                        Battle battle = ObjectContext.Instance.Battle;
-
                         Player player = ObjectContext.Instance.Player;
                         Dungeon dungeon = ObjectContext.Instance.Dungeon;
-                        List<Monster> monsters = dungeon.GetMonsterList();
+                        Battle battle = ObjectContext.Instance.Battle;
+
+                        var mode = states.Get<string>("MODE").Init("WAITING");
+                        var turn = states.Get<bool?>("TURN").Init(null);
                         
                         context.Content = () =>
                         {
-                            Console.WriteLine($"Battle!!");
+                            if (turn.GetValue() == null) turn.SetValue(battle.GetIsPlayerTurn());
+                            
+                            Logger.WriteLine($"Battle!!\n", ConsoleColor.Yellow);
 
-                            for (int index = 0; index < monsters.Count; index++)
+                            if (mode.GetValue() == "ATTACK")
                             {
-                                Monster monster = monsters[index];
-                                Console.WriteLine($"Lv.{monster.Level} {monster.Name} - HP {monster.HP}");
+                                Console.WriteLine(
+                                    $"Battle!!\n\n" +
+                                    $"{player.Name} 의 공격!\n" +
+                                    $"Lv.3 공허충 을(를) 맞췄습니다. [데미지 : 10]\n\n" +
+                                    $"Lv.3 공허충\nHP 10 -> Dead\n\n" +
+                                    $"0. 다음");
+                            } else if (mode.GetValue() == "ATTACKED")
+                            {
+                                
+                            }
+                            else
+                            {
+                                for (int index = 0; index < dungeon.MonsterList.Count; index++)
+                                {
+                                    Monster monster = dungeon.MonsterList[index];
+                                    if(mode.GetValue() == "SELECT") Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
+                                    Console.Write($"Lv.{monster.Level} {monster.Name} - ");
+                                    Console.WriteLine(monster.IsDead ? "Dead" : $"HP {monster.HP}");
+                                }
+                                Console.WriteLine(
+                                    $"\n[내정보]\n" +
+                                    $"Lv.{player.Level}  Chad ({player.Class}) \n" +
+                                    $"HP {player.HP}/{player.MaxHP}\n");
+                            
+                                if(mode.GetValue() == "WAITING") Console.WriteLine("1. 공격");
+                                else if(mode.GetValue() == "SELECT") Console.WriteLine("0. 취소");
+                            }
+                        };
+
+                        context.Choice = () =>
+                        {
+                            if (mode.GetValue() == "WAITING")
+                            {
+                                if (context.Selection != 1)
+                                {
+                                    context.Error();
+                                    return;
+                                }
+                                mode.SetValue("SELECT");
+                                return;
                             }
 
+                            if (mode.GetValue() == "SELECT")
+                            {
+                                if(context.Selection == 0)
+                                {
+                                    mode.SetValue("WAITING");
+                                    return;
+                                }
+
+                                if (context.Selection > dungeon.MonsterList.Count)
+                                {
+                                    context.Error();
+                                    return;
+                                }
+                                
+                                battle.SetTargetMonster(context.Selection - 1);
+                                battle.TurnStart();
+                                mode.SetValue("ATTACK");
+                            }
                         };
                     })
             },
