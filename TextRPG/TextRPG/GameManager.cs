@@ -6,6 +6,6 @@ public class GameManager
     
     public void StartGame()
     {
-        this.Router.Navigate(PageType.START_PAGE);
+        this.Router.Navigate(PageType.INIT_PAGE);
     }
 }

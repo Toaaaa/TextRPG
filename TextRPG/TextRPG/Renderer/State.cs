@@ -1,8 +1,9 @@
 public class State<T>()
 {
     private string _key;
+    private T _defaultValue;
     private T _value;
-    private bool isInit = false;
+    // private bool isInitialized = false;
 
     public string GetKey()
     {
@@ -16,10 +17,16 @@ public class State<T>()
     
     public State<T> Init(T newValue)
     {
-        if(isInit) return this;
+        // if(isInitialized) return this;
+        this._defaultValue = newValue;
         this._value = newValue;
-        isInit = true;
+        // isInitialized = true;
         return this;
+    }
+
+    public void Reset()
+    {
+        this._value = _defaultValue;
     }
 
     public T GetValue()

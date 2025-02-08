@@ -17,7 +17,10 @@ public class Router
         if (!_page.Scenes.ContainsKey(pageId)) return;
         // fix: SetRouter 호출과 동작엔 문제 없지만 보장하기 어려움.
         Renderer currentScene = _page.Scenes[pageId];
-        currentScene.Clear();
+        currentScene.States.Clear();
+        //feat: 페이지 접근 시 한번만 실행
+        // currentScene.Register(currentScene);
+        // currentScene.Mount(currentScene);
         currentScene.Render();
     }
     
@@ -28,8 +31,9 @@ public class Router
         if (!_page.Scenes.ContainsKey(pageId)) return;
         // fix: SetRouter 호출과 동작엔 문제 없지만 보장하기 어려움.
         Renderer currentScene = _page.Scenes[pageId];
-        currentScene.SetLocation<T>(locationState);
-        currentScene.Clear();
+        // currentScene.States.SetLocationState<T>(locationState);
+        // currentScene.Register(currentScene);
+        currentScene.States.Clear();
         currentScene.Render();
     }
 
@@ -44,7 +48,8 @@ public class Router
         dynamic previousId = _history.Peek();
         currentScene = _page.Scenes[previousId];
         // do: 넘어갈 때 상태를 지우는 게 맞으나 스택이 비어있을 수 있다.
-        currentScene.Clear();
+        currentScene.States.Clear();
+        // currentScene.Register(currentScene);
         currentScene.Render();
     }
 }
