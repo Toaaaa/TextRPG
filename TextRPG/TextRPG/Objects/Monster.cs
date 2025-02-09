@@ -12,6 +12,10 @@ public class Monster : Actor
     public int DEF { get; set; }
     public int SPD { get; set; }
     public int EXP { get; set; }
+    
+    // ✅ 던전별 등장 확률 (난이도 1~4)
+    public Dictionary<int, int> SpawnRates { get; set; }
+
 
     // 사망 여부
 
@@ -31,21 +35,17 @@ public class Monster : Actor
         DEF = def;
         SPD = spd;
         EXP = exp;
+        SpawnRates = spawnRates;
     }
 
-    static void CreateMonster()
+    
+    // ✅ 몬스터 프리셋 (등장 확률 포함)
+    public static List<Monster> MonsterPresets = new List<Monster>
     {
-       Monster snail = new Monster("달팽이", 1, 10, 2, 0, 1, 1);
-       Monster goblin = new Monster("고블린", 3, 25, 5, 0, 1, 2);
-       Monster orc = new Monster("오크", 5, 50, 2, 2, 3, 5);
-       Monster golem = new Monster("골렘", 10, 200, 10, 5, 2, 8);
-
-       Monster[] monsters = { snail, goblin, orc, golem };
-
-       foreach (var monster in monsters)
-       {
-            Console.WriteLine($"{monster.Name} (Lv.{monster.Level})  HP: {monster.HP}, ATK: {monster.ATK}, DEF: {monster.DEF}, SPD: {monster.SPD}, EXP: {monster.EXP}\n");
-       }
-    }
+        new Monster("달팽이", 1, 10, 2, 0, 1, 1, new Dictionary<int, int> { {1, 50}, {2, 40}, {3, 0},  {4, 0}  }),
+        new Monster("고블린", 3, 25, 5, 0, 1, 2, new Dictionary<int, int> { {1, 50}, {2, 40}, {3, 50}, {4, 0}  }),
+        new Monster("오크", 5, 50, 2, 2, 3, 5, new Dictionary<int, int> { {1, 0},  {2, 20}, {3, 50}, {4, 60} }),
+        new Monster("골렘", 10, 200, 10, 5, 2, 8, new Dictionary<int, int> { {1, 0},  {2, 0},  {3, 0},  {4, 40} })
+    };
 }
 
