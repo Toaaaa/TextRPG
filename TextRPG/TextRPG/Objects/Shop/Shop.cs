@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -11,6 +11,14 @@ using TextRPG.Objects;
 using System.Collections;
 using System.IO;
 using System.Text.Json.Serialization;
+
+public enum TradeResult
+{
+    None,
+    Success,
+    Failed_AlreadyHave,
+    Failed_NotEnoughGold
+}
 
 namespace TextRPG.Objects.Shop
 {
@@ -29,8 +37,8 @@ namespace TextRPG.Objects.Shop
         //모든 아이템 보관하는 Dictionary
         public Dictionary<string, Item> AllItem;
 
-        public OrderedDictionary EquipItemShop { get; }
-        public OrderedDictionary ConsumItemShop { get; }
+        public OrderedDictionary EquipItemShop { get; private set; }
+        public OrderedDictionary ConsumItemShop { get; private set; }
 
         //public
 
@@ -41,14 +49,14 @@ namespace TextRPG.Objects.Shop
         }
 
         //장비 구매
-        public string BuyEquipItem(int _Choice)
+        public TradeResult BuyEquipItem(int _Choice)
         {
             EquipItem equipItem = (EquipItem)EquipItemShop[_Choice - 1];
             if (equipItem != null)
             {
                 if (CheckPlayerHave(equipItem))
                 {
-                    return "이미 구매한 장비입니다.";
+                    return TradeResult.Failed_AlreadyHave;
                 }
                 else
                 {
@@ -57,22 +65,22 @@ namespace TextRPG.Objects.Shop
                         ObjectContext.Instance.Player.GetItem(equipItem);
                         ObjectContext.Instance.Player.Gold -= equipItem.Price;
 
-                        return $"{equipItem.Name}을/를 1개 구매하였습니다.";
+                        return TradeResult.Success;
                     }
                     else
                     {
-                        return "금액이 부족합니다.";
+                        return TradeResult.Failed_NotEnoughGold;
                     }
                 }
             }
             else
             {
-                return "존재하지 않는 아이템입니다.";
+                return TradeResult.None;
             }
         }
 
         //소모품 구매
-        public string BuyConsumItem(int _Choice)
+        public TradeResult BuyConsumItem(int _Choice)
         {
             ConsumItem consumItem = (ConsumItem)ConsumItemShop[_Choice - 1];
             if (consumItem != null)
@@ -85,11 +93,11 @@ namespace TextRPG.Objects.Shop
                         cItem.Num += 1;
                         ObjectContext.Instance.Player.Gold -= consumItem.Price;
 
-                        return $"{consumItem.Name}을/를 1개 구매하였습니다.";
+                        return TradeResult.Success;
                     }
                     else
                     {
-                        return "금액이 부족합니다.";
+                        return TradeResult.Failed_NotEnoughGold;
                     }
                 }
                 else
@@ -99,17 +107,17 @@ namespace TextRPG.Objects.Shop
                         ObjectContext.Instance.Player.GetItem(consumItem);
                         ObjectContext.Instance.Player.Gold -= consumItem.Price;
 
-                        return $"{consumItem.Name}을/를 1개 구매하였습니다.";
+                        return TradeResult.Success;
                     }
                     else
                     {
-                        return "금액이 부족합니다.";
+                        return TradeResult.Failed_NotEnoughGold;
                     }
                 }
             }
             else
             {
-                return "존재하지 않는 아이템입니다.";
+                return TradeResult.None;
             }
         }
 
