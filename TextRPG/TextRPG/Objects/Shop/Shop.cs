@@ -156,7 +156,7 @@ namespace TextRPG.Objects.Shop
 
             // 장비 아이템 읽어오기
             {
-                filePath = Path.Combine(Path.GetFullPath(@"..\..\..\Objects\Items\EquipItem.json"));
+                filePath = Path.Combine(Path.GetFullPath(@"../../../Objects/Items/EquipItem.json"));
                 if (!File.Exists(filePath))
                 {
                     Console.WriteLine("파일을 찾을 수 없습니다.");
@@ -185,7 +185,7 @@ namespace TextRPG.Objects.Shop
 
             //소모품 읽어오기
             {
-                filePath = Path.Combine(Path.GetFullPath(@"..\..\..\Objects\Items\EquipItem.json"));
+                filePath = Path.Combine(Path.GetFullPath(@"../../../Objects/Items/EquipItem.json"));
                 if (!File.Exists(filePath))
                 {
                     Console.WriteLine("파일을 찾을 수 없습니다.");
