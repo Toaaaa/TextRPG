@@ -279,7 +279,7 @@ public class Page
                             case "CATEGORY":
                                 {
                                     Console.WriteLine(
-                                        "0.나가기\n1. 장비\n2. 소모품\n\n" +
+                                        "0. 나가기\n1. 장비\n2. 소모품\n\n" +
                                         "원하시는 행동을 입력해주세요. >>");
                                 }
                                 break;
@@ -290,7 +290,12 @@ public class Page
                                         for (int i = 0; i < equipItems.Count; i++)
                                         {
                                             Item item = (Item)equipItems[i];
-                                            Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
+                                            bool isExistItem = inventory.Contains(item);
+                                            
+                                            Logger.WriteLine(
+                                                $"{i + 1}. { item.Name} | {item.Explain} | {(isExistItem? "구매 완료" : item.Price +"G")}",
+                                                isExistItem ? ConsoleColor.DarkCyan: ConsoleColor.Gray
+                                                );
                                         }
                                         
                                         if(result.GetValue() == TradeResult.Success) Logger.WriteLine("\n구매를 성공했습니다.", ConsoleColor.Green);
@@ -487,8 +492,14 @@ public class Page
                                                 {
                                                     Monster monster = dungeon.MonsterList[index];
                                                     if (mode.GetValue() == "SELECT") Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
+
+                                                    // 죽은 몬스터는 아예 선택이 안되도록 처리해도 좋을 듯.
+                                                    if (monster.IsDead) Console.ForegroundColor = ConsoleColor.DarkGray;
+
                                                     Console.Write($"Lv.{monster.Level} {monster.Name} - ");
                                                     Console.WriteLine(monster.IsDead ? "Dead" : $"HP {monster.HP}");
+                                                    
+                                                    Console.ResetColor();
                                                 }
 
                                                 Console.WriteLine(
@@ -542,6 +553,12 @@ public class Page
                                             {
                                                 if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
                                                 if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
+
+                                                if ((bool)battle.GetMonsterIsDead(context.Selection - 1))
+                                                {
+                                                    context.Error();
+                                                    break;
+                                                }
 
                                                 battle.SetTargetMonster(context.Selection - 1);
                                                 mode.SetValue("SELECT_END");
@@ -600,6 +617,34 @@ public class Page
                         };
                     })
             },
+            {
+                PageType.REWARD_PAGE,
+                new Renderer((context, states)  =>
+                {
+                    context.Content = () =>
+                    {
+                        Console.WriteLine(
+                            $"Battle!! - Result\n\n" +
+                            $"Victory\n\n" +
+                            $"던전에서 몬스터 3마리를 잡았습니다.\n\n" +
+                            $"[캐릭터 정보]\n" +
+                            $"Lv.1 Chad -> Lv2. " +
+                            $"Chad\n" +
+                            $"HP 100 -> 74\n" +
+                            $"exp 5 -> 13\n\n" +
+                            $"[획득 아이템]\n" +
+                            $"500 Gold\n" +
+                            $"포션 - 1\n" +
+                            $"낡은검 - 1\n\n" +
+                            $"0. 다음");
+                    };
+
+                    context.Choice = () =>
+                    {
+                        _router.PopState(3);
+                    };
+                })
+            }
         };    
     }   
 }
