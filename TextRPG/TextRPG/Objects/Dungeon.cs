@@ -10,7 +10,7 @@ public class Dungeon
         new Monster("골렘", 10, 200, 10, 5, 2, 8),
     };
 
-    List<Stage> stages = new List<Stage>
+    public List<Stage> stages = new List<Stage>
     {
         new Stage("초급 던전",_monsters),
         new Stage("중급 던전",_monsters),
@@ -52,7 +52,7 @@ public class Dungeon
 
         Console.WriteLine($"{stages[stageIndex - 1].Name}에 입장했습니다.");
         CurrentStage = stages[stageIndex - 1];
-        MonsterList = CurrentStage.MonsterSet();
+        MonsterList = Monster.GenerateDungeonMonsters(stageIndex-1);
     }
 }
 
