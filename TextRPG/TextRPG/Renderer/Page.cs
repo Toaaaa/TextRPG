@@ -1,13 +1,20 @@
 
+using TextRPG;
 using TextRPG.Objects;
+using TextRPG.Objects.Items;
+using TextRPG.Objects.Shop;
 
 public enum PageType
 {
+    INIT_PAGE,
     START_PAGE,
     STATUS_PAGE,
     INVENTORY_PAGE,
-    BATTLE_PAGE,
     SHOP_PAGE,
+    SHOP_TRADE_PAGE,
+    DUNGEON_PAGE,
+    BATTLE_PAGE,
+    REWARD_PAGE,
 }
 
 public class Page
@@ -26,17 +33,80 @@ public class Page
         Scenes = new Dictionary<PageType, Renderer>()
         {
             {
+                PageType.INIT_PAGE,
+                new Renderer((context, states) =>
+                {
+                    var mode = states.Get<string>("MODE").Init("NAME");
+                    Player player = ObjectContext.Instance.Player;
+                    
+                    context.Content = () =>
+                    {
+                        //skip
+                        _router.Navigate(PageType.START_PAGE);
+
+                        Console.WriteLine($"스파르타 던전에 오신 여러분 환영합니다.");
+                        
+                        if(mode.GetValue() == "NAME") 
+                            Console.WriteLine($"원하시는 이름을 설정해주세요.");
+                        
+                        if (mode.GetValue() == "CLASS") 
+                            Console.WriteLine(
+                                $"{player.Name}님 원하시는 직업을 선택해주세요.\n\n" +
+                                $"1.전사\n2.궁수\n3.도적\n4.마법사");
+                    };
+                    context.Choice = () =>
+                    {
+                        if (mode.GetValue() == "NAME")
+                        {
+                            if(string.IsNullOrWhiteSpace(context.SelectionText)) context.Error();
+                            else
+                            {
+                                player.Name = context.SelectionText;
+                                mode.SetValue("CLASS");
+                                return;
+                            }
+                        }
+
+                        if (mode.GetValue() == "CLASS")
+                        {
+                            switch (context.Selection)
+                            {
+                                case 1:
+                                    player.Class = "전사";
+                                    break;
+                                case 2:
+                                    player.Class = "궁수";
+                                    break;
+                                case 3:
+                                    player.Class = "도적";
+                                    break;
+                                case 4:
+                                    player.Class = "마법사";
+                                    break;
+                                default:
+                                    context.Error();
+                                    break;
+                            }
+                            _router.Navigate(PageType.START_PAGE);
+                        }
+                    };
+                })
+            },
+            {
                 PageType.START_PAGE,
-                new Renderer()
-                    .Contents(store =>
+                new Renderer((context, states) =>
+                {
+                    context.Content = () =>
                     {
-                        Console.WriteLine($"스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.");
-                        Console.WriteLine("\n1. 상태 보기\n2. 인벤토리\n3.상점\n4. 던전입장\n");
-                        Console.WriteLine("\n원하시는 행동을 입력해주세요.\n>>");
-                    })
-                    .Choices((store, selection) =>
+                        Console.WriteLine(
+                            $"스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n" +
+                            $"1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 던전입장\n\n" +
+                            $"원하시는 행동을 입력해주세요. >>");
+                    };
+                    
+                    context.Choice = () =>
                     {
-                        switch (selection)
+                        switch (context.Selection)
                         {
                             case 1:
                                 _router.Navigate(PageType.STATUS_PAGE);
@@ -48,97 +118,382 @@ public class Page
                                 _router.Navigate(PageType.SHOP_PAGE);
                                 break;
                             case 4:
-                                _router.Navigate(PageType.BATTLE_PAGE);
+                                _router.Navigate(PageType.DUNGEON_PAGE);
+                                break;
+                            default:
+                                context.Error();
                                 break;
                         }
-                    })
+                    };
+                })
             },
             {
                 PageType.STATUS_PAGE,
-                new Renderer()
-                    .Contents(store =>
+                new Renderer((context, states) =>
                     {
                         Player player = ObjectContext.Instance.Player;
-                        
-                        Console.WriteLine($"상태 보기\n\n캐릭터의 정보가 표시됩니다.\n");
-                        Console.WriteLine($"Lv. {player.Name}\nChad ( {player.Class} )\n공격력 : {player.TotalATK}\n방어력 : {player.TotalDEF}\n체 력 : {player.MaxHP}\nGold : {player.Gold} G\n");
-                        Console.WriteLine("\n원하시는 행동을 입력해주세요.\n>>");
-                        Console.WriteLine("0. 나가기");
-                    })
-                    .Choices((store, selection) =>
-                    {
-
-                        switch (selection)
+            
+                        context.Content = () =>
                         {
-                            case 0:
-                                _router.PopState();
-                                break;
-                        }
+                            Console.WriteLine(
+                                $"상태 보기\n" +
+                                $"캐릭터의 정보가 표시됩니다.\n\n" +
+                                $"Lv. {player.Level}\n" +
+                                $"Chad ( {player.Class} )\n" +
+                                $"이름 : {player.Name}\n" +
+                                $"공격력 : {player.TotalATK}\n" +
+                                $"방어력 : {player.TotalDEF}\n" +
+                                $"체 력 : {player.MaxHP}\n" +
+                                $"Gold : {player.Gold} G\n\n" +
+                                $"0. 나가기\n\n" +
+                                $"원하시는 행동을 입력해주세요. >>\n");
+                        };
+            
+                        context.Choice = () =>
+                        {
+                            switch (context.Selection)
+                            {
+                                case 0:
+                                    _router.PopState();
+                                    break;
+                                default:
+                                    context.Error();
+                                    break;
+                            }
+                        };
                     })
             },
             {
                 PageType.INVENTORY_PAGE,
-                new Renderer()
-                    .Contents(store =>
+                new Renderer((context, states) =>
+                {
+                    List<Item> inventory = ObjectContext.Instance.Player.Inventory;
+                    var mode = states.Get<string>("MODE").Init("VIEW");
+
+                    context.Content = () =>
                     {
-                        Console.WriteLine($"인벤토리\n보유 중인 아이템을 관리할 수 있습니다.\n\n[아이템 목록]\n- [E]무쇠갑옷      | 방어력 +5 | 무쇠로 만들어져 튼튼한 갑옷입니다.\n- [E]스파르타의 창  | 공격력 +7 | 스파르타의 전사들이 사용했다는 전설의 창입니다.\n- 낡은 검         | 공격력 +2 | 쉽게 볼 수 있는 낡은 검 입니다.\n\n1. 장착 관리\n2. 나가기\n\n원하시는 행동을 입력해주세요.");
-                    })
-                    .Choices((store, selection) =>
-                    {
-                        switch (selection)
+                        Console.WriteLine(
+                            $"인벤토리\n" +
+                            $"보유 중인 아이템을 관리할 수 있습니다.\n\n" +
+                            $"[아이템 목록]");
+                        
+                        for (int i = 0; i < inventory.Count; i++)
                         {
+                            Item item = inventory[i];
+                            Console.WriteLine($"{i + 1}. {item.Name} | {item.Explain} | {item.Price}");
+                        }
+                        
+                        Console.WriteLine(
+                            "\n\n1. 장착 관리\n2. 나가기\n\n" +
+                            "원하시는 행동을 입력해주세요. >>");
+                    };
+                    
+                    context.Choice = () =>
+                    {
+                        switch (context.Selection)
+                        {
+                            case 1:
+                                mode.SetValue("EQUIPMENT");
+                                break;
                             case 2:
                                 _router.PopState();
                                 break;
-                        }
-                    })
-            },
-            {
-                PageType.BATTLE_PAGE,
-                new Renderer()
-                    .Contents(store =>
-                    {
-                        var battleMode = store.State<string>("BATTLE_MODE").Init("DEFAULT");
-                        
-                        Console.WriteLine($"Battle!!\n\nLv.2 미니언  HP 15\nLv.5 대포미니언 HP 25\nLV.3 공허충 HP 10\n\n\n[내정보]\nLv.1  Chad (전사) \nHP 100/100 \n\n1. 공격");
-                        
-                        if(battleMode.GetValue() == "DEFAULT") Console.WriteLine("\n원하시는 행동을 입력해주세요.\n>>");
-                        if(battleMode.GetValue() == "BATTLE_MODE") Console.WriteLine("\n대상을 선택해주세요.\n>>");
-                    })
-                    .Choices((store, selection) =>
-                    {
-                        var battleMode = store.State<string>("BATTLE_MODE");
-
-                        switch (selection)
-                        {
-                            case 0: 
-                                _router.PopState();
-                                break;
-                            case 1:
-                                battleMode.SetValue("BATTLE_MODE");
+                            default:
+                                context.Error();
                                 break;
                         }
-                    })
+                    };
+                })
             },
             {
                 PageType.SHOP_PAGE,
-                new Renderer()
-                    .Contents(store =>
+                new Renderer((context, states) =>
+                {
+                    Shop shop = ObjectContext.Instance.Shop;
+                    Player player = ObjectContext.Instance.Player;
+
+                    var mode = states.Get<string>("MODE").Init("VIEW");
+                    var category = states.Get<string>("CATEGORY").Init("NONE");
+                    var itemsList = new List<Item>(shop.AllItem.Values);
+
+                    context.Content = () =>
                     {
-                        Console.WriteLine($"상점\n필요한 아이템을 얻을 수 있는 상점입니다.\n\n[보유 골드]\n800 G\n\n[아이템 목록]\n- 수련자 갑옷    | 방어력 +5  | 수련에 도움을 주는 갑옷입니다.             |  1000 G\n- 무쇠갑옷      | 방어력 +9  | 무쇠로 만들어져 튼튼한 갑옷입니다.           |  구매완료\n- 스파르타의 갑옷 | 방어력 +15 | 스파르타의 전사들이 사용했다는 전설의 갑옷입니다.|  3500 G\n- 낡은 검      | 공격력 +2  | 쉽게 볼 수 있는 낡은 검 입니다.            |  600 G\n- 청동 도끼     | 공격력 +5  |  어디선가 사용됐던거 같은 도끼입니다.        |  1500 G\n- 스파르타의 창  | 공격력 +7  | 스파르타의 전사들이 사용했다는 전설의 창입니다. |  구매완료\n\n1. 아이템 구매\n0. 나가기\n\n원하시는 행동을 입력해주세요.\n>>");
-                    })
-                    .Choices((store, selection) =>
-                    {
-                        switch (selection)
+                        Console.WriteLine(
+                            $"상점\n" +
+                            $"필요한 아이템을 얻을 수 있는 상점입니다.\n\n" +
+                            $"[보유 골드]\n{player.Gold} G\n\n");
+
+                        switch (mode.GetValue())
                         {
-                            case 0:
-                                _router.PopState();
+                            case "VIEW":
+                                {
+                                    Console.WriteLine(
+                                        "\n\n1. 구매하기\n2. 나가기\n\n" +
+                                        "원하시는 행동을 입력해주세요. >>");
+                                    break;
+                                }
+                            case "CATEGORY":
+                                {
+                                    Console.WriteLine(
+                                        "\n\n1. 장비\n2. 소모품\n3. 나가기\n\n" +
+                                        "원하시는 행동을 입력해주세요. >>");
+                                }
                                 break;
-                            case 1:
+                            case "BUYING":
+                                switch (category.GetValue())
+                                {
+                                    case "EQUIPMENT":
+                                        for (int i = 0; i < itemsList.Count; i++)
+                                        {
+                                            var item = itemsList[i];
+                                            Console.WriteLine($"{i + 1}. {item.Name}");
+                                        }
+                                        Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                                        break;
+                                    case "CONSUM":
+                                        for (int i = 0; i < itemsList.Count; i++)
+                                        {
+                                            var item = itemsList[i];
+                                            Console.WriteLine($"{i + 1}. {item.Name}");
+                                        }
+                                        Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                                        break;
+                                }
                                 break;
                         }
+                    };
+                    
+                    context.Choice = () =>
+                    {
+                        switch (mode.GetValue())
+                        {
+                            case "VIEW":
+                                switch (context.Selection)
+                                {
+                                    case 1:
+                                        mode.SetValue("CATEGORY");
+                                        break;
+                                    case 2:
+                                        _router.PopState();
+                                        break;
+                                    default:
+                                        context.Error();
+                                        break;
+                                }
+                                break;
+                            case "CATEGORY":
+                                switch (context.Selection)
+                                {
+                                    case 1:
+                                        mode.SetValue("BUYING");
+                                        category.SetValue("EQUIPMENT");                                        
+                                        break;
+                                    case 2:
+                                        mode.SetValue("BUYING");
+                                        category.SetValue("CONSUM");                                 
+                                        break;
+                                    case 3:
+                                        mode.SetValue("VIEW");
+                                        break;
+                                    default:
+                                        context.Error();
+                                        break;
+                                }
+                                break;
+                            case "BUYING":
+                                switch (context.Selection)
+                                {
+                                    case 0:
+                                        mode.SetValue("CATEGORY");
+                                        category.SetValue("NONE");
+                                        break;
+                                    default:
+                                        context.Error();
+                                        break;
+                                }
+                                break;
+                        }
+                    };
+                })
+            },
+            {
+                PageType.DUNGEON_PAGE,
+                new Renderer((context, states) =>
+                {
+                    Dungeon dungeon = ObjectContext.Instance.Dungeon;
+                    Battle battle = ObjectContext.Instance.Battle;
+
+                    context.Content = () =>
+                    {
+                        Console.WriteLine(
+                            "던전 입장\n" +
+                            "던전을 선택해주세요.\n");
+                        
+                        for (int index = 0; index < dungeon.stages.Count; index++)
+                        {
+                            Console.WriteLine($"{index + 1}. {dungeon.stages[index].Name}");      
+                        }
+                    };
+                    
+                    context.Choice = () =>
+                    {
+                        if (context.Selection < 1 || context.Selection > dungeon.stages.Count)
+                        {
+                            context.Error(); 
+                            return;
+                        }
+                        dungeon.EnterStage(context.Selection);
+                        battle.BeforeBattle();
+                        _router.Navigate(PageType.BATTLE_PAGE);
+                    };
+                })
+            },
+            {
+                PageType.BATTLE_PAGE,
+                new Renderer((context, states) =>
+                    {
+                        Player player = ObjectContext.Instance.Player;
+                        Dungeon dungeon = ObjectContext.Instance.Dungeon;
+                        Battle battle = ObjectContext.Instance.Battle;
+
+                        var mode = states.Get<string>("MODE").Init("WAITING");
+                        var turn = states.Get<bool?>("TURN").Init(null);
+                        var isEnd = states.Get<bool?>("END").Init(false);
+                        
+                        context.Content = () =>
+                        {
+                            // if (turn.GetValue() == null) turn.SetValue(battle.GetIsPlayerTurn());
+                            if (turn.GetValue() == null) turn.SetValue(true);
+
+                            Logger.WriteLine($"Battle!!\n", ConsoleColor.Yellow);
+                            
+                            switch (turn.GetValue())
+                            {
+                                case true:
+                                    switch (mode.GetValue())
+                                    {
+                                        case "WAITING":
+                                        case "SELECT":
+                                            {
+                                                // show monster list
+                                                for (int index = 0; index < dungeon.MonsterList.Count; index++)
+                                                {
+                                                    Monster monster = dungeon.MonsterList[index];
+                                                    if (mode.GetValue() == "SELECT") Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
+                                                    Console.Write($"Lv.{monster.Level} {monster.Name} - ");
+                                                    Console.WriteLine(monster.IsDead ? "Dead" : $"HP {monster.HP}");
+                                                }
+
+                                                Console.WriteLine(
+                                                    $"\n[내정보]\n" +
+                                                    $"Lv.{player.Level}  Chad ({player.Class}) \n" +
+                                                    $"HP {player.HP}/{player.MaxHP}\n");
+
+                                                if (mode.GetValue() == "WAITING") Console.WriteLine("1. 공격");
+                                                else if (mode.GetValue() == "SELECT") Console.WriteLine("0. 취소");
+
+                                                break;
+                                            }
+                                        case "SELECT_END":
+                                            {
+                                                Monster monster = battle.TargetMonster;
+                                                Console.WriteLine(
+                                                    $"{player.Name} 의 공격!\n" +
+                                                    $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : 10]\n\n" +
+                                                    $"Lv.{monster.Level} {monster.Name}\nHP {monster.MaxHP} -> {monster.HP}\n\n" +
+                                                    $"0. 다음");
+                                            }
+                                            break;
+                                    }
+                                    break;
+                                case false:
+                                    {
+                                        Actor monster = battle.CurrentActor;
+                                        Console.WriteLine(
+                                            $"{monster.Name} 의 공격!\n" +
+                                            $"{player.Name} 을(를) 맞췄습니다. [데미지 : 10]\n\n" +
+                                            $"Lv.{player.Level} {player.Name}\nHP {player.MaxHP} -> {player.HP}\n\n" +
+                                            $"0. 다음");
+                                    }
+                                    break;
+                            }
+                        };
+
+                        context.Choice = () =>
+                        {
+                            // 배틀 종료 확인을 최상단에서 체크
+                            switch (turn.GetValue())
+                            {
+                                case true:
+                                    switch (mode.GetValue())
+                                    {
+                                        case "WAITING":
+                                                if (context.Selection != 1) { context.Error(); return; }
+                                                mode.SetValue("SELECT");
+                                            break;
+                                        case "SELECT":
+                                            {
+                                                if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
+                                                if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
+                                                Logger.Debug(context.Selection.ToString());
+
+                                                battle.SetTargetMonster(context.Selection - 1);
+                                                mode.SetValue("SELECT_END");
+                                                
+                                                turn.SetValue(battle.GetIsPlayerTurn());
+                                                battle.TurnStart();
+                                                break;
+                                            }
+                                        case "SELECT_END":
+                                            {
+                                                if(context.Selection != 0) { context.Error(); return; }
+                                                // 공통 로직
+                                                // 한 사이클이 끝나 선택 화면으로
+                                                if (battle.TurnQueue.Count == 0)
+                                                {
+                                                    turn.SetValue(true);
+                                                    mode.SetValue("WAITING");
+                                                }
+                                                else
+                                                {
+                                                    turn.SetValue(battle.GetIsPlayerTurn());
+                                                }
+                                                bool isBattleEnd = battle.BattleTurn();
+                                                if (isBattleEnd)
+                                                {
+                                                    _router.Navigate(PageType.REWARD_PAGE);
+                                                    break;
+                                                }
+                                                break;
+                                            }
+                                    }
+                                    break;
+                                // queue가 1개 남았을 때 턴 확인 시 오류 발생
+                                case false:
+                                    {
+                                        if(context.Selection != 0) { context.Error(); return; }
+                                        // 공통 로직
+                                        if (battle.TurnQueue.Count == 0)
+                                        {
+                                            turn.SetValue(true);
+                                            mode.SetValue("WAITING");
+                                        }
+                                        else
+                                        {
+                                            turn.SetValue(battle.GetIsPlayerTurn());
+                                        }
+                                        bool isBattleEnd = battle.BattleTurn();
+                                        if (isBattleEnd)
+                                        {
+                                            _router.Navigate(PageType.REWARD_PAGE);
+                                            break;
+                                        }
+                                    }
+                                    break;
+                            }
+                        };
                     })
-            }
+            },
         };    
     }   
 }
