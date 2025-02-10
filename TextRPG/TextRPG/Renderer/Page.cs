@@ -168,7 +168,9 @@ public class Page
                 PageType.INVENTORY_PAGE,
                 new Renderer((context, states) =>
                 {
-                    List<Item> inventory = ObjectContext.Instance.Player.Inventory;
+                    Player player = ObjectContext.Instance.Player;
+                    var equipments = player.Inventory.OfType<EquipItem>();
+                    
                     var mode = states.Get<string>("MODE").Init("VIEW");
 
                     context.Content = () =>
@@ -178,29 +180,66 @@ public class Page
                             $"보유 중인 아이템을 관리할 수 있습니다.\n\n" +
                             $"[아이템 목록]");
                         
-                        for (int i = 0; i < inventory.Count; i++)
+                        for (int i = 0; i < equipments.Count(); i++)
                         {
-                            Item item = inventory[i];
-                            Console.WriteLine($"{i + 1}. {item.Name} | {item.Explain} | {item.Price}");
-                        }
+                            EquipItem item = equipments.ElementAt(i);
+                            
+                            Console.ForegroundColor = item.IsEquip ? ConsoleColor.Blue : ConsoleColor.Gray; 
                         
-                        Console.WriteLine(
-                            "\n\n0. 나가기\n1. 장착 관리\n\n" +
-                            "원하시는 행동을 입력해주세요. >>");
+                            if(item.IsEquip) Console.Write($"[E] ");
+                            if(mode.GetValue() == "EQUIPMENT") Console.Write($"{i + 1}. ");
+                            Console.WriteLine($"{item.Name} | {item.Explain} | {item.Price}G");
+                        }
+                        Console.ResetColor();
+
+                        switch (mode.GetValue())
+                        {
+                            case "VIEW":
+                                Console.WriteLine(
+                                    "\n0. 나가기\n1. 장착 관리\n\n" +
+                                    "원하시는 행동을 입력해주세요. >>");
+                                break;
+                            case "EQUIPMENT":
+                                Console.WriteLine(
+                                    "\n0. 나가기\n\n" +
+                                    "원하시는 행동을 입력해주세요. >>");
+                                break;
+                        }
                     };
                     
                     context.Choice = () =>
                     {
-                        switch (context.Selection)
+                        switch (mode.GetValue())
                         {
-                            case 0:
-                                _router.PopState();
+                            case "VIEW":
+                                switch (context.Selection)
+                                {
+                                    case 0:
+                                        _router.PopState();
+                                        break;
+                                    case 1:
+                                        mode.SetValue("EQUIPMENT");
+                                        break;
+                                    default:
+                                        context.Error();
+                                        break;
+                                }
                                 break;
-                            case 1:
-                                mode.SetValue("EQUIPMENT");
-                                break;
-                            default:
-                                context.Error();
+                            case "EQUIPMENT":
+                                if (context.Selection == 0)
+                                {
+                                    mode.SetValue("VIEW");
+                                    break;
+                                }
+
+                                if (context.Selection > equipments.Count())
+                                {
+                                    context.Error();
+                                    break;
+                                }
+                                EquipItem equipItem = equipments.ElementAt(context.Selection - 1);
+                                if(equipItem.IsEquip) player.UnequipItem(equipItem);
+                                else player.EquipItem(equipItem);
                                 break;
                         }
                     };
