@@ -213,11 +213,12 @@ public class Page
                     Shop shop = ObjectContext.Instance.Shop;
                     Player player = ObjectContext.Instance.Player;
 
-                    var mode = states.Get<string>("MODE").Init("VIEW");
-                    var category = states.Get<string>("CATEGORY").Init("NONE");
-                    var items = shop.AllItem;
                     var equipItems = shop.EquipItemShop;
                     var consumItems = shop.ConsumItemShop;
+                    
+                    var mode = states.Get<string>("MODE").Init("VIEW");
+                    var category = states.Get<string>("CATEGORY").Init("NONE");
+                    var result = states.Get<TradeResult>("RESULT").Init(TradeResult.None);
                     
                     context.Content = () =>
                     {
@@ -251,6 +252,11 @@ public class Page
                                             Item item = (Item)equipItems[i];
                                             Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
                                         }
+                                        
+                                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("구매를 성공했습니다.", ConsoleColor.Green);
+                                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("이미 구입한 상품입니다.", ConsoleColor.Red);
+                                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("골드가 부족합니다.", ConsoleColor.Red);
+                                        
                                         Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
                                     case "CONSUM":
@@ -259,6 +265,11 @@ public class Page
                                             Item item = (Item)consumItems[i];
                                             Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
                                         }
+                                        
+                                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("구매를 성공했습니다.", ConsoleColor.Green);
+                                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("이미 구입한 상품입니다.", ConsoleColor.Red);
+                                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("골드가 부족합니다.", ConsoleColor.Red);
+                                        
                                         Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
                                 }
@@ -304,15 +315,31 @@ public class Page
                                 }
                                 break;
                             case "BUYING":
-                                switch (context.Selection)
+                                if (context.Selection == 0)
                                 {
-                                    case 0:
-                                        mode.SetValue("CATEGORY");
-                                        category.SetValue("NONE");
-                                        break;
-                                    default:
-                                        context.Error();
-                                        break;
+                                    mode.SetValue("CATEGORY");
+                                    category.SetValue("NONE");
+                                    result.SetValue(TradeResult.None);
+                                    break;
+                                }
+                                switch (category.GetValue())
+                                {
+                                     case "EQUIPMENT":
+                                         if (context.Selection > equipItems.Count)
+                                         {
+                                             context.Error();
+                                             break;
+                                         }
+                                         result.SetValue(shop.BuyEquipItem(context.Selection));
+                                         break;
+                                     case "CONSUM":
+                                         if (context.Selection > consumItems.Count)
+                                         {
+                                             context.Error();
+                                             break;
+                                         }
+                                         result.SetValue(shop.BuyConsumItem(context.Selection));
+                                         break;
                                 }
                                 break;
                         }
