@@ -247,16 +247,16 @@ public class Page
                                     case "EQUIPMENT":
                                         for (int i = 0; i < equipItems.Count; i++)
                                         {
-                                            var item = equipItems[i];
-                                            Console.WriteLine($"{i + 1}. {item}");
+                                            Item item = (Item)equipItems[i];
+                                            Console.WriteLine($"{i + 1}. { item.Name}");
                                         }
                                         Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
                                     case "CONSUM":
                                         for (int i = 0; i < consumItems.Count; i++)
                                         {
-                                            var item = consumItems[i];
-                                            Console.WriteLine($"{i + 1}. {item}");
+                                             Item item = (Item)consumItems[i];
+                                            Console.WriteLine($"{i + 1}. {item.Name}");
                                         }
                                         Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
