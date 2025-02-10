@@ -17,7 +17,6 @@ public class Battle
     public List<Monster>? MonsterList = new List<Monster>();
     private List<Actor> actors = new List<Actor>();
     
-
     public static Action<Player, Monster>? PlayerAction { get; set; }
 
     //데이터 리턴
@@ -128,6 +127,10 @@ public class Battle
     {
         TotalExp = 0;
         TotalGold = 0;
+        
+        actors.Clear();
+        TurnQueue.Clear();
+        
         MonsterList = ObjectContext.Instance.Dungeon.GetMonsterList();//현재 던전 몬스터 가져오기
         //만약 레벨스케일링 등 몬스터 데이터 변환을 할 예정이면 여기서 처리.
         MonsterList?.Sort((x, y) => y.SPD.CompareTo(x.SPD));//몬스터 속도가 빠른 순으로 정렬
