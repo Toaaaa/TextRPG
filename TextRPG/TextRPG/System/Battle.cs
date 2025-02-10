@@ -1,3 +1,4 @@
+using System.Numerics;
 using TextRPG.Objects;
 using TextRPG.Objects.Items;
 
@@ -20,6 +21,10 @@ public class Battle
     public static Action<Player, Monster>? PlayerAction { get; set; }
 
     //데이터 리턴
+    public List<Actor> GetActors()//현재 전투에 참여하는 모든 객체 반환.
+    {
+        return actors;
+    }
     public int GetTotalExp()//전투 종료 후 획득할 경험치 반환.
     {
         return TotalExp;
@@ -105,7 +110,7 @@ public class Battle
         TargetMonster = monster;
     }
     //전투
-    private PriorityQueue<Actor,int> GetTurnQueue(List<Actor> actors)//턴 순서 정하기
+    public PriorityQueue<Actor,int> GetTurnQueue(List<Actor> actors)//턴 순서 정하기
     {
         foreach (var actor in actors)
         {
@@ -139,14 +144,14 @@ public class Battle
 
     public void TurnStart()//턴 시작시 호출
     {
-        if (TurnQueue.Count == 0)
+        /*if (TurnQueue.Count == 0)
         {
             TurnQueue = GetTurnQueue(actors);
             if(CheckBattleEnd())//모든 몬스터가 죽었을 때
             {
                 return;//턴 
             }
-        }
+        }*/
         Actor actor = TurnQueue.Dequeue();
         CurrentActor = actor;
         if (actor is Player && TargetMonster != null)//플레이어 턴일 때
