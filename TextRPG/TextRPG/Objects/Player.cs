@@ -103,9 +103,11 @@ public class Player : Actor
     public int CalcDamage()
     {
         var random = new Random();
-        var damage = (TotalATK) * (random.Next(90, 111) / 100);
+        // 100.0으로 나누어 소수점을 반영
+        int damage = (int)(TotalATK * (random.Next(90, 111) / 100.0f));
         return damage;
     }
+
     
     // 데미지 받아서 체력 -
     public int TakeDamage(int damage)
