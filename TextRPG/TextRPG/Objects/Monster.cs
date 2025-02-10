@@ -5,14 +5,8 @@ using System.Collections.Generic;
 // 몬스터 기본 클래스
 public class Monster : Actor
 {
-    public string Name { get; }
-    public int Level { get; }
-    public int MaxHP { get; set; }
-    public int HP { get; set; }
-    public int ATK { get; set; }
     public int DEF { get; set; }
-    public int SPD { get; set; }
-    public int EXP { get; set; }
+    
     
     // ✅ 던전별 등장 확률 (난이도 1~4)
     public Dictionary<int, int> SpawnRates { get; set; }
@@ -32,7 +26,7 @@ public class Monster : Actor
         Level = level;
         MaxHP = maxhp;
         HP = maxhp;
-        ATK = atk;
+        TotalATK = atk;
         DEF = def;
         SPD = spd;
         EXP = exp;
@@ -91,7 +85,7 @@ public class Monster : Actor
                 if (roll <= cumulativeChance)
                 {
                     dungeonMonsters.Add(new Monster(entry.Key.Name, entry.Key.Level, entry.Key.HP, 
-                                                    entry.Key.ATK, entry.Key.DEF, entry.Key.SPD, entry.Key.EXP,
+                                                    entry.Key.TotalATK, entry.Key.DEF, entry.Key.SPD, entry.Key.EXP,
                                                     entry.Key.SpawnRates)); // 같은 몬스터라도 새 객체 생성
                     break;
                 }
