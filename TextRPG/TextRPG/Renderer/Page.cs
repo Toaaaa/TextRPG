@@ -252,6 +252,7 @@ public class Page
                     Shop shop = ObjectContext.Instance.Shop;
                     Player player = ObjectContext.Instance.Player;
 
+                    var inventory = player.Inventory;
                     var equipItems = shop.EquipItemShop;
                     var consumItems = shop.ConsumItemShop;
                     
@@ -271,7 +272,7 @@ public class Page
                             case "VIEW":
                                 {
                                     Console.WriteLine(
-                                        "0. 나가기\n1. 구매하기\n\n" +
+                                        "0. 나가기\n1. 구매하기\n2. 판매하기\n\n" +
                                         "원하시는 행동을 입력해주세요. >>");
                                     break;
                                 }
@@ -292,9 +293,9 @@ public class Page
                                             Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
                                         }
                                         
-                                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("구매를 성공했습니다.", ConsoleColor.Green);
-                                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("이미 구입한 상품입니다.", ConsoleColor.Red);
-                                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("골드가 부족합니다.", ConsoleColor.Red);
+                                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("\n구매를 성공했습니다.", ConsoleColor.Green);
+                                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("\n이미 구입한 상품입니다.", ConsoleColor.Red);
+                                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("\n골드가 부족합니다.", ConsoleColor.Red);
                                         
                                         Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
@@ -305,12 +306,24 @@ public class Page
                                             Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
                                         }
                                         
-                                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("구매를 성공했습니다.", ConsoleColor.Green);
-                                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("이미 구입한 상품입니다.", ConsoleColor.Red);
-                                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("골드가 부족합니다.", ConsoleColor.Red);
+                                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("\n구매를 성공했습니다.", ConsoleColor.Green);
+                                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("\n이미 구입한 상품입니다.", ConsoleColor.Red);
+                                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("\n골드가 부족합니다.", ConsoleColor.Red);
                                         
                                         Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
+                                }
+                                break;
+                            case "SELLING":
+                                {
+                                    for (int i = 0; i < inventory.Count; i++)
+                                    {
+                                        Item item = inventory[i];
+                                        Console.WriteLine($"{i + 1}. {item.Name} | {item.Explain} | {item.Price}G");
+                                    }
+                                    Console.WriteLine(
+                                        "\n0. 나가기\n\n" +
+                                        "원하시는 행동을 입력해주세요. >>");
                                 }
                                 break;
                         }
@@ -328,6 +341,9 @@ public class Page
                                         break;
                                     case 1:
                                         mode.SetValue("CATEGORY");
+                                        break;
+                                    case 2:
+                                        mode.SetValue("SELLING");
                                         break;
                                     default:
                                         context.Error();
@@ -380,6 +396,21 @@ public class Page
                                          result.SetValue(shop.BuyConsumItem(context.Selection));
                                          break;
                                 }
+                                break;
+                            case "SELLING":
+                                if (context.Selection == 0)
+                                {
+                                    mode.SetValue("VIEW");
+                                    result.SetValue(TradeResult.None);
+                                    break;
+                                }
+                                if (context.Selection > inventory.Count)
+                                {
+                                    context.Error();
+                                    break;
+                                }
+                                
+                                shop.SellItem(context.Selection - 1);
                                 break;
                         }
                     };
