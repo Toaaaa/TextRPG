@@ -565,8 +565,6 @@ public class Page
                                                 battle.SetTargetMonster(context.Selection - 1);
                                                 mode.SetValue("SELECT_END");
                                                 
-                                                Logger.Debug(battle.TurnQueue.Count.ToString() + " " + (battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1) + " " + cycle.GetValue());
-
                                                 turn.SetValue(battle.GetIsPlayerTurn());
                                                 battle.TurnStart();
                                                 cycle.SetValue(prev => prev + 1);
@@ -581,8 +579,6 @@ public class Page
                                                 mode.SetValue("WAITING");
                                                 
                                              
-                                            
-                                                Logger.Debug(battle.TurnQueue.Count.ToString() + " " + (battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1) + " " + cycle.GetValue());
                                                 if (cycle.GetValue() == battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1)
                                                 {
                                                     List<Actor> currentActors = new List<Actor>() {};
@@ -610,7 +606,6 @@ public class Page
                                         bool isBattleEnd = battle.TurnEnd();
                                         if (isBattleEnd) { _router.Navigate(PageType.REWARD_PAGE); }
                                         
-                                        Logger.Debug(battle.TurnQueue.Count.ToString() + " " + (battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1) + " " + cycle.GetValue());
                                         if (cycle.GetValue() == battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1)
                                         {
                                             List<Actor> currentActors = new List<Actor>() {};
