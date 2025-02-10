@@ -251,7 +251,7 @@ public class Page
                                             Item item = (Item)equipItems[i];
                                             Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
                                         }
-                                        Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                                        Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
                                     case "CONSUM":
                                         for (int i = 0; i < consumItems.Count; i++)
@@ -259,7 +259,7 @@ public class Page
                                             Item item = (Item)consumItems[i];
                                             Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
                                         }
-                                        Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                                        Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
                                 }
                                 break;
