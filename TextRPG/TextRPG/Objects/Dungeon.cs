@@ -44,7 +44,7 @@ public class Dungeon
 
         Console.WriteLine($"{stages[stageIndex - 1].Name}에 입장했습니다.");
         CurrentStage = stages[stageIndex - 1];
-        MonsterList = Monster.GenerateDungeonMonsters(stageIndex-1);
+        MonsterList = Monster.GenerateDungeonMonsters(stageIndex);
     }
 }
 
