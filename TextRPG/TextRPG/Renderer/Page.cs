@@ -1,4 +1,5 @@
 
+using System.Collections;
 using TextRPG;
 using TextRPG.Objects;
 using TextRPG.Objects.Items;
@@ -184,7 +185,7 @@ public class Page
                         }
                         
                         Console.WriteLine(
-                            "\n\n1. 장착 관리\n2. 나가기\n\n" +
+                            "\n\n0. 나가기\n1. 장착 관리\n\n" +
                             "원하시는 행동을 입력해주세요. >>");
                     };
                     
@@ -192,11 +193,11 @@ public class Page
                     {
                         switch (context.Selection)
                         {
+                            case 0:
+                                _router.PopState();
+                                break;
                             case 1:
                                 mode.SetValue("EQUIPMENT");
-                                break;
-                            case 2:
-                                _router.PopState();
                                 break;
                             default:
                                 context.Error();
@@ -214,8 +215,9 @@ public class Page
 
                     var mode = states.Get<string>("MODE").Init("VIEW");
                     var category = states.Get<string>("CATEGORY").Init("NONE");
-                    var itemsList = new List<Item>(shop.AllItem.Values);
-
+                    var equipItems = shop.EquipItemShop;
+                    var consumItems = shop.ConsumItemShop;
+                    
                     context.Content = () =>
                     {
                         Console.WriteLine(
@@ -228,14 +230,14 @@ public class Page
                             case "VIEW":
                                 {
                                     Console.WriteLine(
-                                        "\n\n1. 구매하기\n2. 나가기\n\n" +
+                                        "\n\n0. 나가기\n1. 구매하기\n\n" +
                                         "원하시는 행동을 입력해주세요. >>");
                                     break;
                                 }
                             case "CATEGORY":
                                 {
                                     Console.WriteLine(
-                                        "\n\n1. 장비\n2. 소모품\n3. 나가기\n\n" +
+                                        "\n\n0.나가기\n 1. 장비\n2. 소모품\n\n" +
                                         "원하시는 행동을 입력해주세요. >>");
                                 }
                                 break;
@@ -243,18 +245,18 @@ public class Page
                                 switch (category.GetValue())
                                 {
                                     case "EQUIPMENT":
-                                        for (int i = 0; i < itemsList.Count; i++)
+                                        for (int i = 0; i < equipItems.Count; i++)
                                         {
-                                            var item = itemsList[i];
-                                            Console.WriteLine($"{i + 1}. {item.Name}");
+                                            var item = equipItems[i];
+                                            Console.WriteLine($"{i + 1}. {item}");
                                         }
                                         Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
                                     case "CONSUM":
-                                        for (int i = 0; i < itemsList.Count; i++)
+                                        for (int i = 0; i < consumItems.Count; i++)
                                         {
-                                            var item = itemsList[i];
-                                            Console.WriteLine($"{i + 1}. {item.Name}");
+                                            var item = consumItems[i];
+                                            Console.WriteLine($"{i + 1}. {item}");
                                         }
                                         Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
@@ -270,11 +272,11 @@ public class Page
                             case "VIEW":
                                 switch (context.Selection)
                                 {
+                                    case 0:
+                                        _router.PopState();
+                                        break;
                                     case 1:
                                         mode.SetValue("CATEGORY");
-                                        break;
-                                    case 2:
-                                        _router.PopState();
                                         break;
                                     default:
                                         context.Error();
@@ -284,6 +286,9 @@ public class Page
                             case "CATEGORY":
                                 switch (context.Selection)
                                 {
+                                    case 0:
+                                        mode.SetValue("VIEW");
+                                        break;
                                     case 1:
                                         mode.SetValue("BUYING");
                                         category.SetValue("EQUIPMENT");                                        
@@ -291,9 +296,6 @@ public class Page
                                     case 2:
                                         mode.SetValue("BUYING");
                                         category.SetValue("CONSUM");                                 
-                                        break;
-                                    case 3:
-                                        mode.SetValue("VIEW");
                                         break;
                                     default:
                                         context.Error();
@@ -333,10 +335,17 @@ public class Page
                         {
                             Console.WriteLine($"{index + 1}. {dungeon.stages[index].Name}");      
                         }
+                        Console.WriteLine($"\n0.나가기");
                     };
                     
                     context.Choice = () =>
                     {
+                        if (context.Selection == 0)
+                        {
+                            _router.PopState();
+                            return;
+                        }
+                        
                         if (context.Selection < 1 || context.Selection > dungeon.stages.Count)
                         {
                             context.Error(); 
