@@ -93,7 +93,7 @@ public class Battle
     }
     void MonsterAttack(Player player,Monster monster)//몬스터가 공격 선택시 호출
     {
-        int realdmg = (int)Math.Ceiling((ObjectContext.Instance.Player.CalcDamage() * (1 - (monster.DEF / (20.0 + monster.DEF))))); //방어상수 20.
+        int realdmg = (int)Math.Ceiling((monster.CalcDamage() * (1 - (player.TotalDEF / (20.0 + player.TotalDEF))))); //방어상수 20.
         player.HP = player.TakeDamage(realdmg);
         LastDamage = realdmg;
     }
