@@ -1,5 +1,6 @@
 using System;
 using TextRPG.Objects;
+using System.Collections.Generic;
 
 // 몬스터 기본 클래스
 public class Monster : Actor
@@ -25,7 +26,7 @@ public class Monster : Actor
     }
    
     // 몬스터 생성
-    public Monster(string name, int level, int maxhp, int atk, int def, int spd, int exp)
+    public Monster(string name, int level, int maxhp, int atk, int def, int spd, int exp, Dictionary<int, int> spawnRates)
     {
         Name = name;
         Level = level;
@@ -96,5 +97,7 @@ public class Monster : Actor
                 }
             }
         }
+        return dungeonMonsters;
+    }
 }
 
