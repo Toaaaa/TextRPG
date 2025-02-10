@@ -215,6 +215,7 @@ public class Page
 
                     var mode = states.Get<string>("MODE").Init("VIEW");
                     var category = states.Get<string>("CATEGORY").Init("NONE");
+                    var items = shop.AllItem;
                     var equipItems = shop.EquipItemShop;
                     var consumItems = shop.ConsumItemShop;
                     
@@ -223,21 +224,21 @@ public class Page
                         Console.WriteLine(
                             $"상점\n" +
                             $"필요한 아이템을 얻을 수 있는 상점입니다.\n\n" +
-                            $"[보유 골드]\n{player.Gold} G\n\n");
+                            $"[보유 골드]\n{player.Gold} G\n");
 
                         switch (mode.GetValue())
                         {
                             case "VIEW":
                                 {
                                     Console.WriteLine(
-                                        "\n\n0. 나가기\n1. 구매하기\n\n" +
+                                        "0. 나가기\n1. 구매하기\n\n" +
                                         "원하시는 행동을 입력해주세요. >>");
                                     break;
                                 }
                             case "CATEGORY":
                                 {
                                     Console.WriteLine(
-                                        "\n\n0.나가기\n 1. 장비\n2. 소모품\n\n" +
+                                        "0.나가기\n1. 장비\n2. 소모품\n\n" +
                                         "원하시는 행동을 입력해주세요. >>");
                                 }
                                 break;
@@ -248,15 +249,15 @@ public class Page
                                         for (int i = 0; i < equipItems.Count; i++)
                                         {
                                             Item item = (Item)equipItems[i];
-                                            Console.WriteLine($"{i + 1}. { item.Name}");
+                                            Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
                                         }
                                         Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
                                     case "CONSUM":
                                         for (int i = 0; i < consumItems.Count; i++)
                                         {
-                                             Item item = (Item)consumItems[i];
-                                            Console.WriteLine($"{i + 1}. {item.Name}");
+                                            Item item = (Item)consumItems[i];
+                                            Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
                                         }
                                         Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                                         break;
