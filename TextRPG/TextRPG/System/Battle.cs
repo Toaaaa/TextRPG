@@ -78,8 +78,8 @@ public class Battle
     //행동 + 선택
     public void PlayerAttack(Monster monster)//플레이어가 공격 선택시 호출
     {
-        int realdmg = ObjectContext.Instance.Player.CalcDamage() * (1 - (monster.DEF / 25 + monster.DEF)); //방어상수 25.
-        monster.TakeDamage(realdmg);
+        int realdmg = (int)(ObjectContext.Instance.Player.CalcDamage() * (1 - (monster.DEF / 20.0 + monster.DEF))); //방어상수 20.
+        monster.HP = monster.TakeDamage(realdmg);
         LastDamage = realdmg;
     }
     public void MonsterTurn(Player player, Monster monster)//몬스터의 턴 선택시 호출
@@ -89,8 +89,8 @@ public class Battle
     }
     void MonsterAttack(Player player,Monster monster)//몬스터가 공격 선택시 호출
     {
-        int realdmg = monster.CalcDamage() * (1 - (player.TotalDEF / 25 + player.TotalDEF)); //방어상수 25.
-        player.TakeDamage(realdmg);
+        int realdmg = (int)(monster.CalcDamage() * (1 - (player.TotalDEF / 20.0 + player.TotalDEF))); //방어상수 20.
+        player.HP = player.TakeDamage(realdmg);
         LastDamage = realdmg;
     }
     void OnMonsterDeath(Monster monster)//몬스터가 죽었을 때 호출
@@ -124,6 +124,7 @@ public class Battle
         TotalExp = 0;
         TotalGold = 0;
         MonsterList = ObjectContext.Instance.Dungeon.GetMonsterList();//현재 던전 몬스터 가져오기
+        //만약 레벨스케일링 등 몬스터 데이터 변환을 할 예정이면 여기서 처리.
         MonsterList?.Sort((x, y) => y.SPD.CompareTo(x.SPD));//몬스터 속도가 빠른 순으로 정렬
         actors.Add(ObjectContext.Instance.Player);//플레이어 추가
         if(MonsterList != null)
@@ -141,6 +142,10 @@ public class Battle
         if (TurnQueue.Count == 0)
         {
             TurnQueue = GetTurnQueue(actors);
+            if(CheckBattleEnd())//모든 몬스터가 죽었을 때
+            {
+                return;//턴 
+            }
         }
         Actor actor = TurnQueue.Dequeue();
         CurrentActor = actor;
@@ -150,9 +155,12 @@ public class Battle
             //PlayerAction = null;
             PlayerAttack(TargetMonster);
         }
-        else//몬스터 턴일 때
+        else if(actor is Monster monster)//몬스터 턴일 때
         {
-            MonsterTurn(ObjectContext.Instance.Player, (Monster)actor);
+            if(monster.IsDead)//죽은 몬스터는 턴 넘김.
+                TurnStart();
+            else
+                MonsterTurn(ObjectContext.Instance.Player, (Monster)actor);
         }
     }
     public bool TurnEnd()//턴 종료시 호출 (true: 전투 종료, false: 계속 진행)
