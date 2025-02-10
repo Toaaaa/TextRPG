@@ -16,7 +16,7 @@ public class Actor
     public virtual int CalcDamage()
     {
         var random = new Random();
-        var damage = TotalATK * (random.Next(90, 111) / 100);
+        int damage = (int)(TotalATK * (random.Next(90, 111) / 100.0f));
         return damage;
     }
     
