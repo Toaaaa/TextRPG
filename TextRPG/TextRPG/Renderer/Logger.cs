@@ -12,4 +12,12 @@ public class Logger
         Console.WriteLine(message);
         Console.ResetColor();
     }
+
+    public static void Debug(string message, int duration = 1000)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(message);
+        Thread.Sleep(duration);
+        Console.ResetColor();
+    }
 }
