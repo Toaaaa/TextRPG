@@ -436,7 +436,7 @@ public class Page
                                                 Monster monster = battle.TargetMonster;
                                                 Console.WriteLine(
                                                     $"{player.Name} 의 공격!\n" +
-                                                    $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : 10]\n\n" +
+                                                    $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
                                                     $"Lv.{monster.Level} {monster.Name}\nHP {monster.MaxHP} -> {monster.HP}\n\n" +
                                                     $"0. 다음");
                                             }
@@ -448,7 +448,7 @@ public class Page
                                         Actor monster = battle.CurrentActor;
                                         Console.WriteLine(
                                             $"{monster.Name} 의 공격!\n" +
-                                            $"{player.Name} 을(를) 맞췄습니다. [데미지 : 10]\n\n" +
+                                            $"{player.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
                                             $"Lv.{player.Level} {player.Name}\nHP {player.MaxHP} -> {player.HP}\n\n" +
                                             $"0. 다음");
                                     }
@@ -472,7 +472,6 @@ public class Page
                                             {
                                                 if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
                                                 if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
-                                                Logger.Debug(context.Selection.ToString());
 
                                                 battle.SetTargetMonster(context.Selection - 1);
                                                 mode.SetValue("SELECT_END");
