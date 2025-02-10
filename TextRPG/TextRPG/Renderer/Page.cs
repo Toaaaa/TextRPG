@@ -471,6 +471,7 @@ public class Page
                         var mode = states.Get<string>("MODE").Init("WAITING");
                         var turn = states.Get<bool?>("TURN").Init(null);
                         var isEnd = states.Get<bool?>("END").Init(false);
+                        var cycle = states.Get<int?>("CYCLE").Init(0);
                         
                         context.Content = () =>
                         {
@@ -560,22 +561,44 @@ public class Page
                                                     context.Error();
                                                     break;
                                                 }
-
+                                                // 대상 지정, 플레이어 행동 결정 완료
                                                 battle.SetTargetMonster(context.Selection - 1);
                                                 mode.SetValue("SELECT_END");
                                                 
+                                                Logger.Debug(battle.TurnQueue.Count.ToString() + " " + (battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1) + " " + cycle.GetValue());
+
                                                 turn.SetValue(battle.GetIsPlayerTurn());
                                                 battle.TurnStart();
+                                                cycle.SetValue(prev => prev + 1);
                                                 break;
                                             }
                                         case "SELECT_END":
                                             {
                                                 if(context.Selection != 0) { context.Error(); return; }
-                                            
-                                                turn.SetValue(battle.GetIsPlayerTurn());
-                                                bool isBattleEnd = battle.BattleTurn();
+                                                
+                                                bool isBattleEnd = battle.TurnEnd(); 
                                                 if (isBattleEnd) { _router.Navigate(PageType.REWARD_PAGE); }
                                                 mode.SetValue("WAITING");
+                                                
+                                             
+                                            
+                                                Logger.Debug(battle.TurnQueue.Count.ToString() + " " + (battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1) + " " + cycle.GetValue());
+                                                if (cycle.GetValue() == battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1)
+                                                {
+                                                    List<Actor> currentActors = new List<Actor>() {};
+                                                    currentActors.AddRange(battle.MonsterList!.FindAll(monster => !monster.IsDead));
+                                                    currentActors.Add(player);
+                                                    
+                                                    battle.TurnQueue = battle.GetTurnQueue(currentActors);
+                                                    turn.SetValue(battle.GetIsPlayerTurn());
+                                                    cycle.SetValue(0);
+                                                    return;
+                                                }
+                                               
+                                                turn.SetValue(battle.GetIsPlayerTurn());
+                                                battle.TurnStart();
+                                                cycle.SetValue(prev => prev + 1);
+                                                
                                                 break;
                                             }
                                     }
@@ -584,9 +607,27 @@ public class Page
                                 case false:
                                     {
                                         if(context.Selection != 0) { context.Error(); return; }
-                                        turn.SetValue(battle.GetIsPlayerTurn());
-                                        bool isBattleEnd = battle.BattleTurn();
+                                        bool isBattleEnd = battle.TurnEnd();
                                         if (isBattleEnd) { _router.Navigate(PageType.REWARD_PAGE); }
+                                        
+                                        Logger.Debug(battle.TurnQueue.Count.ToString() + " " + (battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1) + " " + cycle.GetValue());
+                                        if (cycle.GetValue() == battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1)
+                                        {
+                                            List<Actor> currentActors = new List<Actor>() {};
+                                            currentActors.AddRange(battle.MonsterList!.FindAll(monster => !monster.IsDead));
+                                            currentActors.Add(player);
+                                            
+                                            battle.TurnQueue = battle.GetTurnQueue(currentActors);
+                                            turn.SetValue(battle.GetIsPlayerTurn());
+                                            // mode.SetValue("WAITING");
+                                            cycle.SetValue(0);
+                                            return;
+                                        }
+                                        
+                                        turn.SetValue(battle.GetIsPlayerTurn());
+                                        battle.TurnStart();
+                                        cycle.SetValue(prev => prev + 1);
+
                                     }
                                     break;
                             }
