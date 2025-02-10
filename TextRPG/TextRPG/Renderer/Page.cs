@@ -554,6 +554,7 @@ public class Page
                                                 if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
                                                 if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
 
+                                                // 죽은 몬스터를 선택한 경우
                                                 if ((bool)battle.GetMonsterIsDead(context.Selection - 1))
                                                 {
                                                     context.Error();
@@ -570,23 +571,11 @@ public class Page
                                         case "SELECT_END":
                                             {
                                                 if(context.Selection != 0) { context.Error(); return; }
-                                                // 공통 로직
-                                                // 한 사이클이 끝나 선택 화면으로
-                                                if (battle.TurnQueue.Count == 0)
-                                                {
-                                                    turn.SetValue(true);
-                                                    mode.SetValue("WAITING");
-                                                }
-                                                else
-                                                {
-                                                    turn.SetValue(battle.GetIsPlayerTurn());
-                                                }
+                                            
+                                                turn.SetValue(battle.GetIsPlayerTurn());
                                                 bool isBattleEnd = battle.BattleTurn();
-                                                if (isBattleEnd)
-                                                {
-                                                    _router.Navigate(PageType.REWARD_PAGE);
-                                                    break;
-                                                }
+                                                if (isBattleEnd) { _router.Navigate(PageType.REWARD_PAGE); }
+                                                mode.SetValue("WAITING");
                                                 break;
                                             }
                                     }
@@ -595,22 +584,9 @@ public class Page
                                 case false:
                                     {
                                         if(context.Selection != 0) { context.Error(); return; }
-                                        // 공통 로직
-                                        if (battle.TurnQueue.Count == 0)
-                                        {
-                                            turn.SetValue(true);
-                                            mode.SetValue("WAITING");
-                                        }
-                                        else
-                                        {
-                                            turn.SetValue(battle.GetIsPlayerTurn());
-                                        }
+                                        turn.SetValue(battle.GetIsPlayerTurn());
                                         bool isBattleEnd = battle.BattleTurn();
-                                        if (isBattleEnd)
-                                        {
-                                            _router.Navigate(PageType.REWARD_PAGE);
-                                            break;
-                                        }
+                                        if (isBattleEnd) { _router.Navigate(PageType.REWARD_PAGE); }
                                     }
                                     break;
                             }
@@ -621,6 +597,9 @@ public class Page
                 PageType.REWARD_PAGE,
                 new Renderer((context, states)  =>
                 {
+                    Player player = ObjectContext.Instance.Player;
+                    var rewrads = ObjectContext.Instance.Battle.RewardItems;
+                    
                     context.Content = () =>
                     {
                         Console.WriteLine(
