@@ -6,7 +6,6 @@ namespace TextRPG;
 
 public class Battle
 {
-    public int LastDamage { get; set; }//마지막 행동이 가한 데미지를 저장.
     private int TotalExp { get; set; }
     private int TotalGold { get; set; }
     public List<Item>? RewardItems { get; set; }
@@ -18,6 +17,10 @@ public class Battle
     private List<Actor> actors = new List<Actor>();
     
     public static Action<Player, Monster>? PlayerAction { get; set; }
+    //마지막 행동 기록
+    public int HitLastHp { get; set; }//마지막 행동에 피격당하기 전 HP를 저장.
+    public int LastDamage { get; set; }//마지막 행동이 가한 데미지를 저장.
+    public bool LastIsCritical { get; set; }//마지막 행동이 크리티컬 했는지 저장.
 
     //데이터 리턴
     public List<Actor> GetActors()//현재 전투에 참여하는 모든 객체 반환.
@@ -82,7 +85,9 @@ public class Battle
     //행동 + 선택
     public void PlayerAttack(Monster monster)//플레이어가 공격 선택시 호출
     {
+        LastIsCritical = ObjectContext.Instance.Player.IsCritical();
         int realdmg = (int)Math.Ceiling((ObjectContext.Instance.Player.CalcDamage() * (1 - (monster.DEF / (20.0 + monster.DEF))))); //방어상수 20.
+        realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
         monster.HP = monster.TakeDamage(realdmg);
         LastDamage = realdmg;
     }
@@ -93,7 +98,9 @@ public class Battle
     }
     void MonsterAttack(Player player,Monster monster)//몬스터가 공격 선택시 호출
     {
+        LastIsCritical = monster.IsCritical();
         int realdmg = (int)Math.Ceiling((monster.CalcDamage() * (1 - (player.TotalDEF / (20.0 + player.TotalDEF))))); //방어상수 20.
+        realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
         player.HP = player.TakeDamage(realdmg);
         LastDamage = realdmg;
     }
