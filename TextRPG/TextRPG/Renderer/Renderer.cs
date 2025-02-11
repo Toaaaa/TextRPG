@@ -22,7 +22,6 @@ public class Renderer
 
     public Renderer(Action<Renderer, States> register)
     {
-        // register(this, States);
         Register = register;
     }
 

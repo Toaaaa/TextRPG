@@ -161,12 +161,12 @@ public class Page
                     {
                         Console.WriteLine($"인벤토리\n" + $"보유 중인 아이템을 관리할 수 있습니다.\n\n" + $"[장비 목록]");
                         
+                        if(!equipments.Any()) Console.WriteLine("보유한 장비가 없습니다.");
                         for (int i = 0; i < equipments.Count(); i++)
                         {
                             EquipItem item = equipments.ElementAt(i);
                             
                             Console.ForegroundColor = item.IsEquip ? ConsoleColor.Blue : ConsoleColor.Gray; 
-                        
                             if(item.IsEquip) Console.Write($"[E] ");
                             if(mode.GetValue() == "EQUIPMENT") Console.Write($"{i + 1}. ");
                             Console.WriteLine($"{item.Name} | {item.Explain} | +{item.Stat}");
@@ -174,6 +174,7 @@ public class Page
                         Console.ResetColor();
                         
                         Console.WriteLine($"\n[아이템 목록]");
+                        if(!consumItems.Any()) Console.WriteLine("보유한 아이템이 없습니다.");
                         for (int i = 0; i < consumItems.Count(); i++)
                         {
                             ConsumItem currentItem = consumItems.ElementAt(i);

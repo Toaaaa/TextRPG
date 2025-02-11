@@ -16,6 +16,7 @@ public class Router
         if (!_page.Scenes.ContainsKey(pageId)) return;
         Renderer currentScene = _page.Scenes[pageId];
         currentScene.LazyLoad();
+        currentScene.Mount?.Invoke();
         currentScene.States.Clear();
         currentScene.Render();
     }
@@ -28,9 +29,9 @@ public class Router
         // fix: SetRouter 호출과 동작엔 문제 없지만 보장하기 어려움.
         Renderer currentScene = _page.Scenes[pageId];
         // currentScene.States.SetLocationState<T>(locationState);
+        currentScene.LazyLoad();
         currentScene.States.Clear();
         //feat: 페이지 접근 시 한번만 실행
-        // currentScene.Mount(currentScene);
         currentScene.Render();
     }
 
