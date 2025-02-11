@@ -506,9 +506,9 @@ public class Page
                                                     Console.WriteLine(
                                                         $"{player.Name} 의 공격!\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
                                                         $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n\n");
-                                                    Console.WriteLine($"\n0. 다음");
-
                                                 }
+                                                Console.WriteLine($"\n0. 다음");
+                                                
                                             break;
                                     }
                                     break;
@@ -559,25 +559,8 @@ public class Page
                                             battle.SetTargetMonster([battle.MonsterList[context.Selection - 1]]);
                                             
                                             
-                                            if (selectedSKill.GetValue() == null)
-                                            {
-                                                Battle.PlayerAction = () =>
-                                                {
-                                                    battle.Target.ForEach(target =>
-                                                        battle.PlayerAttack((target as Monster)!));
-                                                };
-                                            }
-                                            else
-                                            {
-                                                Battle.PlayerAction = () =>
-                                                {
-                                                    battle.Target.ForEach(target =>
-                                                    {
-                                                        battle.LastDamage = player.SkillDamage(selectedSKill.GetValue());
-                                                        target.TakeDamage(battle.LastDamage);
-                                                    });
-                                                };
-                                            }
+                                            if (selectedSKill.GetValue() == null) { Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerAttack((target as Monster)!)); }
+                                            else { Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue())); }
                                             
                                             // 다음 턴 진행
                                             mode.SetValue("SELECT_DONE");
