@@ -18,6 +18,8 @@ namespace TextRPG.Objects.Items
     {
         public EquipItem()
         {
+            ReinforceStat = 0;
+
             ReinforcementLevel = 0;
 
             IsEquip = false;
@@ -28,7 +30,10 @@ namespace TextRPG.Objects.Items
             Name = _Name;
 
             Part = _Part;
+
             Stat = _Stat;
+            TotalStat = _Stat;
+            ReinforceStat = 0;
 
             ReinforcementLevel = 0;
 
@@ -42,16 +47,21 @@ namespace TextRPG.Objects.Items
             Price = _Origin.Price;
 
             Part = _Origin.Part;
-            Stat = _Origin.Stat;
 
-            ReinforcementLevel= _Origin.ReinforcementLevel;
+            Stat = _Origin.Stat;
+            TotalStat = Stat;
+            ReinforceStat = 0;
+
+            ReinforcementLevel = _Origin.ReinforcementLevel;
             IsEquip = _Origin.IsEquip;
         }
 
         //public
         public EEquipPart Part { get; set; }
 
-        public int Stat { get; set; }
+        public int TotalStat { get; set; } // 총 스탯
+        public int Stat { get; set; } // 기초 스탯
+        public int ReinforceStat { get; set; } // 강화 스탯
 
         public bool IsEquip { get; set; }
 
