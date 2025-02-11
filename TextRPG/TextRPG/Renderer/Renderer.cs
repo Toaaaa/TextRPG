@@ -13,6 +13,7 @@ public class Renderer
     public string SelectionText { get; set; } = string.Empty;
     public enum SelectionType { number, text }
     public SelectionType SelectionMode = SelectionType.number;
+    public Action<Renderer, States>? Register;
     
     // error handler
     private bool _isInvalid = false;
@@ -21,7 +22,17 @@ public class Renderer
 
     public Renderer(Action<Renderer, States> register)
     {
-        register(this, States);
+        // register(this, States);
+        Register = register;
+    }
+
+    public void LazyLoad()
+    {
+        if (Register != null)
+        {
+            Register(this, States);
+            Register = null;
+        }
     }
 
     // do: 잘못된 입력에 안내가 필요한 경우
