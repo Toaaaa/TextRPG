@@ -11,6 +11,7 @@ public class Actor
     public int Gold { get; set; }
     public int EXP { get; set; }
     public int SPD { get; set; }
+    public int CRIT { get; set; }
     
     // 데미지 계산
     public virtual int CalcDamage()
@@ -25,5 +26,11 @@ public class Actor
     {
         HP = (HP <= damage) ? 0 : HP - damage;
         return HP;
+    }
+
+    public virtual bool IsCritical()
+    {
+        var random = new Random();
+        return random.Next(0, 101) <= CRIT;
     }
 }
