@@ -9,6 +9,7 @@ public enum EConsumItem
 {
     None,
     Potion,
+    Reinforcement
 }
 
 namespace TextRPG.Objects.Items
@@ -44,9 +45,11 @@ namespace TextRPG.Objects.Items
                                 _Player.HP += 30;
 
                                 break;
+
                             case "하이 포션":
                                 _Player.HP += 50;
                                 break;
+
                             default:
                                 Logger.Debug("존재하지 않는 포션 이름입니다.");
                                 break;
@@ -56,7 +59,12 @@ namespace TextRPG.Objects.Items
                         {
                             _Player.HP = _Player.MaxHP;
                         }
+                        Num--;
                         break;
+
+                    case EConsumItem.Reinforcement:
+                        break;
+
                     default:
                         Logger.Debug("존재하지 않는 아이템 유형입니다.");
                         break;

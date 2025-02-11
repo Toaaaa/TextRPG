@@ -10,5 +10,11 @@
     "Explain": "사용하면 체력을 많이 회복시킵니다.",
     "Price": 400,
     "Category": "Potion"
+  },
+  "강화석": {
+    "Name": "강화석",
+    "Explain": "신비한 기운을 품고 있는 돌입니다. 장비를 강화할 때 필요합니다.",
+    "Price": 500,
+    "Category": "Enrichment"
   }
 }
