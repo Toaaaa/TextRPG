@@ -18,12 +18,23 @@ namespace TextRPG.Objects.Items
     {
         public ConsumItem()
         {
+            Num = 1;
         }
 
         public ConsumItem(EConsumItem _Category)
         {
             Category = _Category;
             Num = 1;
+        }
+
+        public ConsumItem(ConsumItem _Origin)
+        {
+            Name = _Origin.Name;
+            Explain = _Origin.Explain;
+            Price = _Origin.Price;
+
+            Category = _Origin.Category;
+            Num = _Origin.Num;
         }
 
         //public

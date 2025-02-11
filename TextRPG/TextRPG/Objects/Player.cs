@@ -43,14 +43,14 @@ public class Player : Actor
                 UnequipItem(i);
             }
         }
-        UpdateStat(true, item.Part == EEquipPart.Weapon, item.Stat);
+        UpdateStat(true, item.Part == EEquipPart.Weapon, item.TotalStat);
         item.IsEquip = true;
     }
 
     // 아이템 해제
     public void UnequipItem(EquipItem item)
     {
-        UpdateStat(false, item.Part == EEquipPart.Weapon, item.Stat);
+        UpdateStat(false, item.Part == EEquipPart.Weapon, item.TotalStat);
         item.IsEquip = false;
     }
     
