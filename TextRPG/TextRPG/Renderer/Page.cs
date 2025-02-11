@@ -615,8 +615,8 @@ public class Page
                                             
                                             Monster selectedMonster = battle.MonsterList[context.Selection - 1];
 
-                                            // 다중 공격
-                                            if (selectedSKill.GetValue().Name == "이단 배기")
+                                            // fix : 다중 공격 - nullable 체크 
+                                            if (selectedSKill.GetValue()?.Name == "이단 배기")
                                             {
                                                 if (battle.Target == null)
                                                 {
@@ -641,10 +641,13 @@ public class Page
                                                 battle.SetTargetMonster([selectedMonster]);
                                             }
                                             
+                                            // 일반 공격
                                             if (selectedSKill.GetValue() == null)
                                             {
                                                 Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerAttack((target as Monster)!));
                                             }
+                                            
+                                            // 스킬 공격
                                             else {
                                                 Battle.PlayerAction = () => 
                                                 {
