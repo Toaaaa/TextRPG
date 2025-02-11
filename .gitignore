@@ -231,6 +231,7 @@ TextRPG/TextRPG/bin/
 TextRPG/TextRPG/obj/
 
 !Objects/Items/*.json
+!Objects/*.json
 #####
 # End of core ignore list, below put you custom 'per project' settings (patterns or path)
 #####
