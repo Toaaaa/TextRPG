@@ -1,0 +1,47 @@
+{
+  "1": {
+    "Name": "일격",
+    "Mana": 5,
+    "Percent": 10,
+    "Explain": "강력한 일격을 가합니다.",
+    "IgnoreDefense": false,
+    "MultiHit": false,
+    "GetLevel": 1
+  },
+  "2": {
+    "Name": "이단 배기",
+    "Mana": 7,
+    "Percent": 15,
+    "Explain": "적을 2번 공격합니다.",
+    "IgnoreDefense": false,
+    "MultiHit": false,
+    "GetLevel": 5
+  },
+  "3": {
+    "Name": "맹렬한 강타",
+    "Mana": 10,
+    "Percent": 17,
+    "Explain": "강력한 힘을 담아 적을 내리치는 공격입니다.",
+    "IgnoreDefense": false,
+    "MultiHit": false,
+    "GetLevel": 10
+  },
+  "4": {
+    "Name": "분쇄",
+    "Mana": 15,
+    "Percent": 20,
+    "Explain": "적의 방어를 무시하고 공격합니다.",
+    "IgnoreDefense": true,
+    "MultiHit": false,
+    "GetLevel": 12
+  },
+  "5": {
+    "Name": "광풍 베기",
+    "Mana": 30,
+    "Percent": 50,
+    "Explain": "빠른 회전과 함께 주변 적을 도려내는 광범위 공격입니다.",
+    "IgnoreDefense": false,
+    "MultiHit": true,
+    "GetLevel": 15
+  }
+}
