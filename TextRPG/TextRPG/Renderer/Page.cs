@@ -102,7 +102,7 @@ public class Page
                     {
                         Console.WriteLine(
                             $"스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n" +
-                            $"1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 던전입장\n\n" +
+                            $"1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 강화소\n5. 던전입장\n\n" +
                             $"원하시는 행동을 입력해주세요. >>");
                     };
                     
@@ -120,6 +120,9 @@ public class Page
                                 _router.Navigate(PageType.SHOP_PAGE);
                                 break;
                             case 4:
+                                _router.Navigate(PageType.SMITHY_PAGE);
+                                break;
+                            case 5:
                                 _router.Navigate(PageType.DUNGEON_PAGE);
                                 break;
                             default:
@@ -754,8 +757,20 @@ public class Page
                             if(mode.GetValue() == "EQUIPMENT") Console.Write($"{i + 1}. ");
                             Console.WriteLine($"{item.Name} | {item.Explain} | +{item.Stat}");
                         }
+                        Console.WriteLine($"\n0.나가기");
                     };
-                    
+
+                    context.Choice = () =>
+                    {
+                        if (context.Selection != 0)
+                        {
+                            context.Error();
+                            return;
+                        }
+
+                        _router.PopState();
+                    };
+
                 })
             }
         };    
