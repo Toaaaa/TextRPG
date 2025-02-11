@@ -9,14 +9,14 @@ public class Battle
     private int TotalExp { get; set; }
     private int TotalGold { get; set; }
     public List<Item>? RewardItems { get; set; }
-    public Monster? TargetMonster { get; set; }
+    public List<Actor>? Target { get; set; }
     public Actor? CurrentActor { get; set; }
 
     public PriorityQueue<Actor,int> TurnQueue = new PriorityQueue<Actor, int>();
     public List<Monster>? MonsterList = new List<Monster>();
     private List<Actor> actors = new List<Actor>();
     
-    public static Action<Player, Monster>? PlayerAction { get; set; }
+    public static Action? PlayerAction { get; set; }
     //마지막 행동 기록
     public int HitLastHp { get; set; }//마지막 행동에 피격당하기 전 HP를 저장.
     public int LastDamage { get; set; }//마지막 행동이 가한 데미지를 저장.
@@ -42,6 +42,10 @@ public class Battle
     public List<Monster>? GetMonsterList()//현재 몬스터 리스트 반환.
     {
         return MonsterList;
+    }
+    public List<Monster>? GetAliveMonsterList()//살아있는 몬스터 리스트 반환.
+    {
+        return MonsterList?.FindAll(monster => !monster.IsDead);
     }
     public int? GetMonsterCount()//현재 몬스터 수 반환.
     {
@@ -112,10 +116,9 @@ public class Battle
         TotalGold += monster.Gold;
         //아이템 드랍.
     }
-    public void SetTargetMonster(int index)//타겟 몬스터 설정
+    public void SetTargetMonster(List<Monster> monsters)//타겟 몬스터 설정
     {
-        Monster? monster = GetMonster(index);
-        TargetMonster = monster;
+        Target = monsters.ConvertAll<Actor>(x => x);
     }
     //전투
     public PriorityQueue<Actor,int> GetTurnQueue(List<Actor> actors)//턴 순서 정하기
@@ -156,21 +159,13 @@ public class Battle
 
     public void TurnStart()//턴 시작시 호출
     {
-        /*if (TurnQueue.Count == 0)
-        {
-            TurnQueue = GetTurnQueue(actors);
-            if(CheckBattleEnd())//모든 몬스터가 죽었을 때
-            {
-                return;//턴 
-            }
-        }*/
+        Target = new List<Actor>();//타겟 초기화
         Actor actor = TurnQueue.Dequeue();
         CurrentActor = actor;
-        if (actor is Player && TargetMonster != null)//플레이어 턴일 때
+        if (actor is Player && Target != null)//플레이어 턴일 때
         {
-            //PlayerAction?.Invoke((Player)actor,TargetMonster);
-            //PlayerAction = null;
-            PlayerAttack(TargetMonster);
+            PlayerAction?.Invoke();
+            PlayerAction = null;
         }
         else if(actor is Monster monster)//몬스터 턴일 때
         {
