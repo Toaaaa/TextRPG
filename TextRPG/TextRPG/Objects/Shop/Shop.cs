@@ -31,7 +31,6 @@ namespace TextRPG.Objects.Shop
             EquipItemShop = new OrderedDictionary();
             ConsumItemShop = new OrderedDictionary();
             LoadItem();
-            int i = 0;
         }
 
         //public
@@ -162,33 +161,6 @@ namespace TextRPG.Objects.Shop
             string json;
 
             // 장비 아이템 읽어오기
-            //{
-            //    filePath = Path.Combine(Path.GetFullPath(@"../../../Objects/Items/EquipItem.json"));
-            //    if (!File.Exists(filePath))
-            //    {
-            //        Logger.Debug("파일을 찾을 수 없습니다.");
-            //        return;
-            //    }
-
-            //    json = File.ReadAllText(filePath);
-
-            //    JsonSerializerOptions options = new JsonSerializerOptions
-            //    {
-            //        Converters = { new JsonStringEnumConverter() }
-            //    };
-
-            //    Dictionary<string, EquipItem> eItemData = JsonSerializer.Deserialize<Dictionary<string, EquipItem>>(json, options);
-
-            //    foreach (var data in eItemData)
-            //    {
-            //        string key = data.Key;
-            //        EquipItem item = data.Value;
-
-            //        AllItem[key] = item;
-
-            //        EquipItemShop[key] = item;
-            //    }
-            //}
             LoadItemFile<EquipItem, OrderedDictionary>(@"../../../Objects/Items/EquipItem.json", EquipItemShop);
 
             //소모품 읽어오기
