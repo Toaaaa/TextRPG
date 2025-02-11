@@ -115,17 +115,19 @@ namespace TextRPG.Objects.Shop
             }
         }
 
-        public void AddConsumItem(string _ItemName)
+        public void AddConsumItem(string _ItemName, int _AddNum = 1)
         {
             ConsumItem consumItem = ConsumItemShop[_ItemName] as ConsumItem;
             if (CheckPlayerHave(consumItem))
             {
                 ConsumItem cItem = ObjectContext.Instance.Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
-                cItem.Num += 1;
+                cItem.Num += _AddNum;
             }
             else
             {
-                ObjectContext.Instance.Player.GetItem(new ConsumItem(consumItem));
+                ConsumItem cItem = new ConsumItem(consumItem);
+                ObjectContext.Instance.Player.GetItem(cItem);
+                cItem.Num = _AddNum;
             }
         }
 
