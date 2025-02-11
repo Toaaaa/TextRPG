@@ -9,11 +9,14 @@ public class Monster : Actor
 
     // ✅ 드랍 테이블 (아이템, 드랍 확률 %)
     public Dictionary<string, int> DropTable { get; set; }
+    
 
     
     
     // ✅ 던전별 등장 확률 (난이도 1~4)
     public Dictionary<int, int> SpawnRates { get; set; }
+
+    public List<string> DroppedItems { get; private set; } // ✅ 몬스터가 생성될 때 드랍 아이템 결정
 
 
     // 사망 여부
@@ -37,8 +40,30 @@ public class Monster : Actor
         SpawnRates = spawnRates;
         DropTable = dropTable;
         CRIT = crit;
+
+        // ✅ 몬스터 생성 시 어떤 아이템을 드랍할지 결정
+        DroppedItems = DetermineDroppedItems();
     }
 
+    // ✅ 몬스터 생성 시 드랍 아이템 결정 메서드
+    private List<string> DetermineDroppedItems()
+    {
+        List<string> droppedItems = new List<string>();
+        Random rand = new Random();
+
+        foreach (var item in DropTable)
+        {
+            int roll = rand.Next(1, 101); // 1~100 사이 랜덤 값
+            if (roll <= item.Value) // 확률 체크
+            {
+                droppedItems.Add(item.Key);
+            }
+        }
+
+        return droppedItems;
+    }
+
+    
     
     // ✅ 몬스터 프리셋 (등장 확률 포함)
     public static List<Monster> MonsterPresets = new List<Monster>
@@ -48,6 +73,8 @@ public class Monster : Actor
         new Monster("오크", 5, 50, 2, 2, 3, 5, new Dictionary<int, int> { {1, 0},  {2, 20}, {3, 50}, {4, 60} },  new Dictionary<string, int> { {"포션", 50}, {"하이포션", 20}, {"강화석", 40},}, 5 ),
         new Monster("골렘", 10, 200, 10, 5, 2, 8, new Dictionary<int, int> { {1, 0},  {2, 0},  {3, 0},  {4, 40} }, new Dictionary<string, int> { {"하이포션", 35}, {"강화석", 50},},5 ),
     };
+
+    
 
     // ✅ 난이도별 몬스터 생성 메서드
     public static List<Monster> GenerateDungeonMonsters(int difficulty)
