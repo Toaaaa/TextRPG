@@ -1,6 +1,7 @@
 using System.Numerics;
 using TextRPG.Objects;
 using TextRPG.Objects.Items;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TextRPG;
 
@@ -15,9 +16,10 @@ public class Battle
     public PriorityQueue<Actor,int> TurnQueue = new PriorityQueue<Actor, int>();
     public List<Monster>? MonsterList = new List<Monster>();
     private List<Actor> actors = new List<Actor>();
-    
+    public List<BattleActionRecord> MonsterRecords { get; set; } = new List<BattleActionRecord>();
+
     public static Action? PlayerAction { get; set; }
-    //마지막 행동 기록
+    //마지막 행동 기록 (몬스터가 플레이어를 공격 할 때만 사용)
     public int HitLastHp { get; set; }//마지막 행동에 피격당하기 전 HP를 저장.
     public int LastDamage { get; set; }//마지막 행동이 가한 데미지를 저장.
     public bool LastIsCritical { get; set; }//마지막 행동이 크리티컬 했는지 저장.
@@ -95,6 +97,8 @@ public class Battle
         realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
         monster.HP = monster.TakeDamage(realdmg);
         LastDamage = realdmg;
+        var record = new BattleActionRecord(monster, HitLastHp, LastDamage, LastIsCritical);//행동기록 저장
+        MonsterRecords.Add(record);
     }
     public void PlayerSkillAttack(Monster monster, Skill skill)//플레이어가 스킬 공격 선택시 호출
     {
@@ -108,6 +112,8 @@ public class Battle
         realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
         monster.HP = monster.TakeDamage(realdmg);
         LastDamage = realdmg;
+        var record = new BattleActionRecord(monster, HitLastHp, LastDamage, LastIsCritical);//행동기록 저장
+        MonsterRecords.Add(record);
     }
     public void MonsterTurn(Player player, Monster monster)//몬스터의 턴 선택시 호출
     {
@@ -206,8 +212,48 @@ public class Battle
         else
             return MonsterList.All(monster => monster.IsDead);
     }
+    public void EraseRecord()//모든 행동 기록 삭제
+    {
+        MonsterRecords?.Clear();
+    }
 
     // 1. 전투 시작전 모든 객체들의 속도값을 가져와 턴 순서를 정한다 (사망시 제외)
     // 2. 턴 순서가 정해지면 순서에 맞춰 객체들이 행동을 선택한다. (@@의 턴)
     // 3. 행동을 선택한 객체들이 행동을 수행한다.
+}
+
+public class BattleActionRecord
+{
+    public Actor Subject { get; set; } = null!; //복사 대상
+    public int HitLastHp { get; set; }
+    public int LastDamage { get; set; }
+    public bool LastIsCritical { get; set; }
+
+    public BattleActionRecord(Actor Subject, int hitLastHp, int lastDamage, bool lastIsCritical)
+    {
+        Subject = Subject.Clone(); // 객체 복사 (얕은 복사)
+        HitLastHp = hitLastHp;
+        LastDamage = lastDamage;
+        LastIsCritical = lastIsCritical;
+    }
+
+    public Actor GetSubject()
+    {
+        return Subject;
+    }
+
+    public int GetHitLastHp()
+    {
+        return HitLastHp;
+    }
+
+    public int GetLastDamage()
+    {
+        return LastDamage;
+    }
+
+    public bool GetLastIsCritical()
+    {
+        return LastIsCritical;
+    }
 }
