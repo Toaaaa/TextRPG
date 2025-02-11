@@ -33,4 +33,10 @@ public class Actor
         var random = new Random();
         return random.Next(0, 101) <= CRIT;
     }
+
+    // 데이터 복사 메서드
+    public virtual Actor Clone()
+    {
+        return (Actor)this.MemberwiseClone();
+    }
 }

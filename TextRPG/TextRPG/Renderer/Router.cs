@@ -15,6 +15,7 @@ public class Router
         _history.Push(pageId);
         if (!_page.Scenes.ContainsKey(pageId)) return;
         Renderer currentScene = _page.Scenes[pageId];
+        currentScene.LazyLoad();
         currentScene.States.Clear();
         currentScene.Render();
     }

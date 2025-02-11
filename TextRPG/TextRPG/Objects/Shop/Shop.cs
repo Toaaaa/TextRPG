@@ -60,9 +60,9 @@ namespace TextRPG.Objects.Shop
                 }
                 else
                 {
-                    if (ObjectContext.Instance.Player.Gold > equipItem.Price)
+                    if (ObjectContext.Instance.Player.Gold >= equipItem.Price)
                     {
-                        ObjectContext.Instance.Player.GetItem(equipItem);
+                        ObjectContext.Instance.Player.GetItem(new EquipItem(equipItem));
                         ObjectContext.Instance.Player.Gold -= equipItem.Price;
 
                         return TradeResult.Success;
@@ -88,7 +88,7 @@ namespace TextRPG.Objects.Shop
             {
                 if (CheckPlayerHave(consumItem))
                 {
-                    if (ObjectContext.Instance.Player.Gold > consumItem.Price)
+                    if (ObjectContext.Instance.Player.Gold >= consumItem.Price)
                     {
                         ConsumItem cItem = ObjectContext.Instance.Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
                         cItem.Num += 1;
@@ -103,9 +103,9 @@ namespace TextRPG.Objects.Shop
                 }
                 else
                 {
-                    if (ObjectContext.Instance.Player.Gold > consumItem.Price)
+                    if (ObjectContext.Instance.Player.Gold >= consumItem.Price)
                     {
-                        ObjectContext.Instance.Player.GetItem(consumItem);
+                        ObjectContext.Instance.Player.GetItem(new ConsumItem(consumItem));
                         ObjectContext.Instance.Player.Gold -= consumItem.Price;
 
                         return TradeResult.Success;
@@ -142,7 +142,7 @@ namespace TextRPG.Objects.Shop
                         ObjectContext.Instance.Player.Gold += (int)(consumItem.Price * 0.85);
                         ObjectContext.Instance.Player.RemoveItem(consumItem);
                     }
-                    else if (1 < consumItem.Num)
+                    else if (0 < consumItem.Num)
                     {
                         ObjectContext.Instance.Player.Gold += (int)(consumItem.Price * 0.85);
                         consumItem.Num -= 1;
@@ -154,6 +154,7 @@ namespace TextRPG.Objects.Shop
                 Logger.Debug("인벤토리에 존재하지 않는 아이템을 판매하려 했습니다.");
             }
         }
+
         //private
         void LoadItem()
         {

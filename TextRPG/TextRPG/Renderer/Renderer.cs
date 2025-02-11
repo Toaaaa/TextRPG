@@ -13,15 +13,26 @@ public class Renderer
     public string SelectionText { get; set; } = string.Empty;
     public enum SelectionType { number, text }
     public SelectionType SelectionMode = SelectionType.number;
+    public Action<Renderer, States>? Register;
     
     // error handler
-    private bool _isInvalid = false;
-    public void Error() => _isInvalid = true;
-    private void _showError() { Logger.WriteLine("\n잘못된 선택입니다.", ConsoleColor.Red); _isInvalid = false; }
+    private string? _invalidateMessage = null;
+    public void Error(string? message = "잘못된 선택입니다.") => _invalidateMessage = message;
+    private void _showError() { Logger.WriteLine(_invalidateMessage, ConsoleColor.Red); _invalidateMessage = null; }
 
     public Renderer(Action<Renderer, States> register)
     {
-        register(this, States);
+        // register(this, States);
+        Register = register;
+    }
+
+    public void LazyLoad()
+    {
+        if (Register != null)
+        {
+            Register(this, States);
+            Register = null;
+        }
     }
 
     // do: 잘못된 입력에 안내가 필요한 경우
@@ -29,7 +40,7 @@ public class Renderer
     {
         Console.Clear();
         this.Content();
-        if (_isInvalid) { _showError(); }
+        if (_invalidateMessage != null) { _showError(); }
         // fix: 선택 문구도 달라질 수 있음.
         // Console.WriteLine("\n원하시는 행동을 입력해주세요.\n>>");
         string? input = Console.ReadLine();

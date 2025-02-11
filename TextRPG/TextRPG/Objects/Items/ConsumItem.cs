@@ -16,8 +16,10 @@ namespace TextRPG.Objects.Items
 {
     public class ConsumItem : Item
     {
+        // 생성자
         public ConsumItem()
         {
+            Num = 1;
         }
 
         public ConsumItem(EConsumItem _Category)
@@ -26,10 +28,20 @@ namespace TextRPG.Objects.Items
             Num = 1;
         }
 
-        //public
-        public EConsumItem Category { get; set; }
+        public ConsumItem(ConsumItem _Origin)
+        {
+            Name = _Origin.Name;
+            Explain = _Origin.Explain;
+            Price = _Origin.Price;
 
-        public int Num { get; set; }
+            Category = _Origin.Category;
+            Num = _Origin.Num;
+        }
+
+        //public
+        public EConsumItem Category { get; set; } // 소모품 유형
+
+        public int Num { get; set; } // 소모품 갯수
 
         //public
         public void UseItem(Player _Player, EConsumItem _Category)
