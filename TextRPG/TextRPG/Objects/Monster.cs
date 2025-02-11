@@ -18,6 +18,9 @@ public class Monster : Actor
 
     public List<string> DroppedItems { get; private set; } // ✅ 몬스터가 생성될 때 드랍 아이템 결정
 
+    // ✅ 몬스터의 이전 HP 
+    public int BeforeHP { get; set; } 
+
 
     // 사망 여부
 
@@ -33,6 +36,7 @@ public class Monster : Actor
         Level = level;
         MaxHP = maxhp;
         HP = maxhp;
+        BeforeHP = maxhp;
         TotalATK = atk;
         DEF = def;
         SPD = spd;
