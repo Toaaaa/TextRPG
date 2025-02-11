@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -18,15 +18,34 @@ namespace TextRPG.Objects.Items
     {
         public EquipItem()
         {
+            ReinforcementLevel = 0;
+
+            IsEquip = false;
         }
 
         public EquipItem(string _Name, int _Stat, EEquipPart _Part)
         {
             Name = _Name;
-            Part = _Part;
 
-            Stat = _Stat;  
+            Part = _Part;
+            Stat = _Stat;
+
+            ReinforcementLevel = 0;
+
             IsEquip = false;
+        }
+
+        public EquipItem(EquipItem _Origin)
+        {
+            Name = _Origin.Name;
+            Explain = _Origin.Explain;
+            Price = _Origin.Price;
+
+            Part = _Origin.Part;
+            Stat = _Origin.Stat;
+
+            ReinforcementLevel= _Origin.ReinforcementLevel;
+            IsEquip = _Origin.IsEquip;
         }
 
         //public
@@ -35,5 +54,7 @@ namespace TextRPG.Objects.Items
         public int Stat { get; set; }
 
         public bool IsEquip { get; set; }
+
+        public int ReinforcementLevel { get; set; }
     }
 }
