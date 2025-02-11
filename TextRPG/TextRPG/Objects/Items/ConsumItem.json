@@ -4,5 +4,11 @@
     "Explain": "사용하면 체력을 회복시킵니다.",
     "Price": 200,
     "Category": "Potion"
+  },
+  "하이 포션": {
+    "Name": "하이 포션",
+    "Explain": "사용하면 체력을 많이 회복시킵니다.",
+    "Price": 400,
+    "Category": "Potion"
   }
 }
