@@ -86,40 +86,36 @@ namespace TextRPG.Objects.Shop
             ConsumItem consumItem = (ConsumItem)ConsumItemShop[_Choice - 1];
             if (consumItem != null)
             {
-                if (CheckPlayerHave(consumItem))
+                if (ObjectContext.Instance.Player.Gold >= consumItem.Price)
                 {
-                    if (ObjectContext.Instance.Player.Gold >= consumItem.Price)
-                    {
-                        ConsumItem cItem = ObjectContext.Instance.Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
-                        cItem.Num += 1;
-                        ObjectContext.Instance.Player.Gold -= consumItem.Price;
+                    AddConsumItem(consumItem.Name);
+                    ObjectContext.Instance.Player.Gold -= consumItem.Price;
 
-                        return TradeResult.Success;
-                    }
-                    else
-                    {
-                        return TradeResult.Failed_NotEnoughGold;
-                    }
+                    return TradeResult.Success;
                 }
                 else
                 {
-                    if (ObjectContext.Instance.Player.Gold >= consumItem.Price)
-                    {
-                        ObjectContext.Instance.Player.GetItem(new ConsumItem(consumItem));
-                        ObjectContext.Instance.Player.Gold -= consumItem.Price;
-
-                        return TradeResult.Success;
-                    }
-                    else
-                    {
-                        return TradeResult.Failed_NotEnoughGold;
-                    }
+                    return TradeResult.Failed_NotEnoughGold;
                 }
             }
             else
             {
                 Logger.Debug("존재하지 않는 소모 아이템을 선택했습니다.");
                 return TradeResult.None;
+            }
+        }
+
+        public void AddConsumItem(string _ItemName)
+        {
+            ConsumItem consumItem = (ConsumItem)ConsumItemShop[_ItemName];
+            if (CheckPlayerHave(consumItem))
+            {
+                ConsumItem cItem = ObjectContext.Instance.Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
+                cItem.Num += 1;
+            }
+            else
+            {
+                ObjectContext.Instance.Player.GetItem(new ConsumItem(consumItem));
             }
         }
 
@@ -168,8 +164,8 @@ namespace TextRPG.Objects.Shop
             LoadItemFile<ConsumItem, OrderedDictionary>(@"../../../Objects/Items/ConsumItem.json", ConsumItemShop);
         }
 
-        void LoadItemFile<TClass, TDictionary>(string _FilePath, TDictionary _Dictionary) 
-            where TClass : Item 
+        void LoadItemFile<TClass, TDictionary>(string _FilePath, TDictionary _Dictionary)
+            where TClass : Item
             where TDictionary : IDictionary
         {
             string json;
