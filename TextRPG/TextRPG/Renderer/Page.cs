@@ -481,23 +481,34 @@ public class Page
                                                 break;
                                             }
                                         case "SELECT_DONE":
-                                            {
                                                 // 아이템 사용인 경우
                                                 if (selectedItem.GetValue() != null)
                                                 {
-                                                    Console.WriteLine(
-                                                    $"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" + $"HP {player.HP} -> {player.HP}\n\n" + $"HP {player.MP} -> {player.MP}\n\n" + $"0. 다음");
-                                                    
+                                                    Console.WriteLine($"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" + $"HP {player.HP} -> {player.HP}\n\n" + $"HP {player.MP} -> {player.MP}\n\n" + $"0. 다음");
                                                     break;
                                                 }
 
-                                                Monster monster = battle.TargetMonster;
-                                                Console.WriteLine(
-                                                    $"{player.Name} 의 공격!\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                                    // 체력이 0 일때 값이 달라짐
-                                                    $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n\n" + $"0. 다음"
-                                                    );
-                                            }
+                                                if (selectedSKill.GetValue() != null)
+                                                {
+                                                    foreach (Actor monster in battle.Target)
+                                                    {
+                                                        // 체력이 0 일때 값이 달라짐
+                                                        Console.WriteLine(
+                                                            $"{player.Name}가 {selectedSKill.GetValue().Name} 스킬을 사용했습니다.\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
+                                                            $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n");
+                                                    }
+                                                    Console.WriteLine($"\n0. 다음");
+                                                    break;
+                                                }
+ 
+                                                foreach (Actor monster in battle.Target)
+                                                {
+                                                    Console.WriteLine(
+                                                        $"{player.Name} 의 공격!\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
+                                                        $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n\n");
+                                                    Console.WriteLine($"\n0. 다음");
+
+                                                }
                                             break;
                                     }
                                     break;
@@ -521,35 +532,21 @@ public class Page
                                     switch (mode.GetValue())
                                     {
                                         case "WAITING":
-                                            if(context.Selection == 0) { _router.PopState();; return; }
+                                            string[] modes = ["CHOOSE_TARGET", "SELECT_SKILL", "USING_ITEM"];
 
-                                                switch (context.Selection)
-                                                {
-                                                    case 1:
-                                                        mode.SetValue("CHOOSE_TARGET");
-                                                        break;
-                                                    case 2:
-                                                        mode.SetValue("SELECT_SKILL");
-                                                        break;
-                                                    case 3:
-                                                        mode.SetValue("USING_ITEM");
-                                                        break;
-                                                    default:
-                                                        context.Error();
-                                                        break;
-                                                }
+                                            if(context.Selection == 0) { _router.PopState();; return; }
+                                            if(context.Selection > modes.Length) { context.Error(); return; }
+                                            mode.SetValue(modes[context.Selection - 1]);
+                                            
                                             break;
                                         
                                         case "SELECT_SKILL":
                                             if(context.Selection == 0) { mode.SetValue("WAITING"); return; }                                           
-                                            if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
-                                            if (context.Selection > skills.Count()) { context.Error(); return; }
+                                            if (context.Selection > skills.Count() + 1) { context.Error(); return; }
                                             
-                                            // 스킬 카운트
-                                            // if (context.Selection > consumItems.Count() + 1) { context.Error(); break; }
-                                            // Battle.PlayerAction = () => 
-                                            // selectedSKill.SetValue();
-                                            
+                                            Skill currentSkill = skills.ElementAt(context.Selection - 1).Value;
+                                            selectedSKill.SetValue(currentSkill);
+
                                             mode.SetValue("CHOOSE_TARGET");
                                             break;
                                         
@@ -559,11 +556,27 @@ public class Page
                                             if ((bool)battle.GetMonsterIsDead(context.Selection - 1)) { context.Error(); break; } // 죽은 몬스터를 선택한 경우
 
                                             // 대상 지정, 플레이어 행동 결정 완료
-                                            battle.SetTargetMonster(context.Selection - 1);
-
-                                            if (selectedSKill.GetValue() != null)
+                                            battle.SetTargetMonster([battle.MonsterList[context.Selection - 1]]);
+                                            
+                                            
+                                            if (selectedSKill.GetValue() == null)
                                             {
-                                                // Battle.PlayerAction = () => battle.PlayerAttack(battle.TargetMonster);
+                                                Battle.PlayerAction = () =>
+                                                {
+                                                    battle.Target.ForEach(target =>
+                                                        battle.PlayerAttack((target as Monster)!));
+                                                };
+                                            }
+                                            else
+                                            {
+                                                Battle.PlayerAction = () =>
+                                                {
+                                                    battle.Target.ForEach(target =>
+                                                    {
+                                                        battle.LastDamage = player.SkillDamage(selectedSKill.GetValue());
+                                                        target.TakeDamage(battle.LastDamage);
+                                                    });
+                                                };
                                             }
                                             
                                             // 다음 턴 진행
@@ -578,7 +591,7 @@ public class Page
                                             if (context.Selection > consumItems.Count() + 1) { context.Error(); break; }
                                             
                                             selectedItem.SetValue(consumItems.ElementAt(context.Selection - 1));
-                                            // Battle.PlayerAction = () => selectedItem.GetValue().UseItem(player, EConsumItem.Potion);
+                                            Battle.PlayerAction = () => selectedItem.GetValue().UseItem(player, EConsumItem.Potion);
                                             
                                             // 다음 턴 진행
                                             mode.SetValue("SELECT_DONE");
