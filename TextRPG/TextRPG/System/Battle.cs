@@ -172,10 +172,9 @@ public class Battle
 
     public void TurnStart()//턴 시작시 호출
     {
-        Target = new List<Actor>();//타겟 초기화
         Actor actor = TurnQueue.Dequeue();
         CurrentActor = actor;
-        if (actor is Player && Target != null)//플레이어 턴일 때
+        if (actor is Player && Target?.Count >0)//플레이어 턴일 때
         {
             PlayerAction?.Invoke();
             PlayerAction = null;
