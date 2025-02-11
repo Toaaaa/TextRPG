@@ -96,6 +96,19 @@ public class Battle
         monster.HP = monster.TakeDamage(realdmg);
         LastDamage = realdmg;
     }
+    public void PlayerSkillAttack(Monster monster, Skill skill)//플레이어가 스킬 공격 선택시 호출
+    {
+        HitLastHp = monster.HP;
+        int realdmg;
+        LastIsCritical = ObjectContext.Instance.Player.IsCritical();
+        if(skill.IgnoreDefense)
+            realdmg = ObjectContext.Instance.Player.SkillDamage(skill); //방어무시 스킬
+        else
+            realdmg = (int)Math.Ceiling((ObjectContext.Instance.Player.SkillDamage(skill) * (1 - (monster.DEF / (20.0 + monster.DEF))))); //방어상수 20.
+        realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
+        monster.HP = monster.TakeDamage(realdmg);
+        LastDamage = realdmg;
+    }
     public void MonsterTurn(Player player, Monster monster)//몬스터의 턴 선택시 호출
     {
         MonsterAttack(player,monster);
