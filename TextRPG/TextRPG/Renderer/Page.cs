@@ -473,13 +473,14 @@ public class Page
                         Battle battle = ObjectContext.Instance.Battle;
                         Shop shop = ObjectContext.Instance.Shop;
                         
+                        // do: 한번만 호출 필요
                         Dictionary<string, Skill> skills = Skill.LoadSkillDictionary(Path.Combine(Path.GetFullPath(@"../../../Objects/SkillList.json")));
 
                         var mode = states.Get<string>("MODE").Init("WAITING");
                         var isPlayerTurn = states.Get<bool?>("TURN").Init(null);
                         var cycle = states.Get<int?>("CYCLE").Init(0);
 
-                        // var selectedSKill = states.Get<dynamic>("SELECTED_SKILL").Init(null);
+                        var selectedSKill = states.Get<Skill?>("SELECTED_SKILL").Init(null);
                         var selectedItem = states.Get<ConsumItem?>("SELECTED_ITEM").Init(null);
 
                         // 배틀 관련 
@@ -681,6 +682,8 @@ public class Page
                                                 if(context.Selection != 0) { context.Error(); return; }
                                                 if (battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
                                                 mode.SetValue("WAITING");
+                                                selectedItem.SetValue((ConsumItem?) null);
+                                                selectedSKill.SetValue((Skill?) null);
 
                                                 // 사이클이 끝난 경우, 죽은 몬스터를 통해 사이클 다시 체크(죽은 몬스터 발생 시 최대 사이클 변화되도록 관리)
                                                 if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); break; }
