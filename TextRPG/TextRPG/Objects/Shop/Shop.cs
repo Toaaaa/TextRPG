@@ -75,6 +75,7 @@ namespace TextRPG.Objects.Shop
             }
             else
             {
+                Logger.Debug("존재하지 않는 장비 아이템을 선택했습니다.");
                 return TradeResult.None;
             }
         }
@@ -117,6 +118,7 @@ namespace TextRPG.Objects.Shop
             }
             else
             {
+                Logger.Debug("존재하지 않는 소모 아이템을 선택했습니다.");
                 return TradeResult.None;
             }
         }
@@ -147,6 +149,10 @@ namespace TextRPG.Objects.Shop
                     }
                 }
             }
+            else
+            {
+                Logger.Debug("인벤토리에 존재하지 않는 아이템을 판매하려 했습니다.");
+            }
         }
         //private
         private void LoadItem()
@@ -159,7 +165,7 @@ namespace TextRPG.Objects.Shop
                 filePath = Path.Combine(Path.GetFullPath(@"../../../Objects/Items/EquipItem.json"));
                 if (!File.Exists(filePath))
                 {
-                    Console.WriteLine("파일을 찾을 수 없습니다.");
+                    Logger.Debug("파일을 찾을 수 없습니다.");
                     return;
                 }
 
@@ -188,7 +194,7 @@ namespace TextRPG.Objects.Shop
                 filePath = Path.Combine(Path.GetFullPath(@"../../../Objects/Items/EquipItem.json"));
                 if (!File.Exists(filePath))
                 {
-                    Console.WriteLine("파일을 찾을 수 없습니다.");
+                    Logger.Debug("파일을 찾을 수 없습니다.");
                     return;
                 }
 
