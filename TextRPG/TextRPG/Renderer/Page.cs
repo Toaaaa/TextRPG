@@ -4,6 +4,7 @@ using TextRPG;
 using TextRPG.Objects;
 using TextRPG.Objects.Items;
 using TextRPG.Objects.Shop;
+using TextRPG.Objects.Smith;
 
 public enum PageType
 {
@@ -124,7 +125,8 @@ public class Page
                                 $"이름 : {player.Name}\n" +
                                 $"공격력 : {player.TotalATK}\n" +
                                 $"방어력 : {player.TotalDEF}\n" +
-                                $"체 력 : {player.MaxHP}\n" +
+                                $"체 력 : {player.HP}/{player.MaxHP}\n" +
+                                $"마 력 : {player.MP}/{player.MaxMP}\n" +
                                 $"Gold : {player.Gold} G\n\n" +
                                 $"0. 나가기\n\n" +
                                 $"원하시는 행동을 입력해주세요. >>\n");
@@ -248,7 +250,7 @@ public class Page
                                         for (int i = 0; i < equipItems.Count; i++)
                                         {
                                             Item item = (Item)equipItems[i];
-                                            bool isExistItem = inventory.Contains(item);
+                                            bool isExistItem = inventory.Contains(item!);
                                             Logger.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {(isExistItem? "구매 완료" : item.Price +"G")}", isExistItem ? ConsoleColor.DarkCyan: ConsoleColor.Gray);
                                         }
                                         
@@ -542,9 +544,11 @@ public class Page
                                         
                                         case "SELECT_SKILL":
                                             if(context.Selection == 0) { mode.SetValue("WAITING"); return; }                                           
-                                            if (context.Selection > skills.Count() + 1) { context.Error(); return; }
+                                            if (context.Selection > skills.Count()) { context.Error(); return; }
                                             
                                             Skill currentSkill = skills.ElementAt(context.Selection - 1).Value;
+                                            
+                                            if(currentSkill.Mana > player.MP) { context.Error("마나가 부족합니다."); return; }
                                             selectedSKill.SetValue(currentSkill);
 
                                             mode.SetValue("CHOOSE_TARGET");
@@ -670,9 +674,12 @@ public class Page
                 new Renderer((context, states) =>
                 {   
                     Player player = ObjectContext.Instance.Player;
+                    Smith smith = ObjectContext.Instance.Smith; 
+                    smith.SetPlayerEquipItemList();
                     var equipments = player.Inventory.OfType<EquipItem>();
 
-                    var mode = context.States.Get<string>("MODE");
+                    var mode = context.States.Get<string>("MODE").Init("VIEW");
+                    var result = context.States.Get<ESmithResult>("SMITH_RESULT").Init(ESmithResult.None);
 
                     context.Content = () =>
                     {
@@ -681,22 +688,63 @@ public class Page
                         {
                             EquipItem item = equipments.ElementAt(i);
                             
-                            if(mode.GetValue() == "EQUIPMENT") Console.Write($"{i + 1}. ");
+                            if(mode.GetValue() == "REINFORCEMENT") Logger.Write($"{i + 1}. ", ConsoleColor.Cyan);
                             Console.WriteLine($"{item.Name} | {item.Explain} | +{item.Stat}");
                         }
                         
-                        Console.WriteLine($"\n0.나가기");
+                        if(mode.GetValue() == "VIEW") Console.WriteLine($"\n0.나가기\n1. 강화하기");
+                        if (mode.GetValue() == "REINFORCEMENT")
+                        {
+                            Console.WriteLine($"\n0.나가기\n");
+                            switch (result.GetValue())
+                            {
+                                case ESmithResult.Success:
+                                    Logger.WriteLine("강화에 성공했습니다.", ConsoleColor.Green);
+                                    break;
+                                case ESmithResult.Failed_NotEnoughStone:
+                                    Logger.WriteLine("강화석이 부족합니다.", ConsoleColor.Red);
+                                    break;
+                                case ESmithResult.Failed_NotEnoughGold:
+                                    Logger.WriteLine("골드가 부족합니다.", ConsoleColor.Red);
+                                    break;
+                                case ESmithResult.Failed_MaxReinforce:
+                                    Logger.WriteLine("최대 강화치입니다.", ConsoleColor.Red);
+                                    break;
+                            }
+                        }
                     };
 
                     context.Choice = () =>
                     {
-                        if (context.Selection != 0)
+                        switch (mode.GetValue())
                         {
-                            context.Error();
-                            return;
-                        }
+                            case "VIEW":
+                                switch (context.Selection)
+                                {
+                                    case 0:
+                                        _router.PopState();
+                                        break;
+                                    case 1:
+                                        mode.SetValue("REINFORCEMENT");
+                                        break;
+                                    default:
+                                        context.Error();
+                                        break;
+                                }
+                                break;
+                            case "REINFORCEMENT":
+                                result.SetValue(ESmithResult.None);
+                                
+                                if(context.Selection== 0) { mode.SetValue("VIEW"); break; }
+                                if(context.Selection > equipments.Count()) { context.Error(); return; }
 
-                        _router.PopState();
+                                result.SetValue(smith.ReinforceItem(context.Selection));
+                                break;
+                                
+                        }
+                        {
+                            
+                        }
                     };
 
                 })
