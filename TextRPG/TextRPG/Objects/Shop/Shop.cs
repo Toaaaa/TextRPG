@@ -80,6 +80,16 @@ namespace TextRPG.Objects.Shop
             }
         }
 
+        public void AddEquipItem(string _ItemName)
+        {
+            EquipItem equipItem = EquipItemShop[_ItemName] as EquipItem;
+
+            if (!CheckPlayerHave(equipItem))
+            {
+                ObjectContext.Instance.Player.GetItem(new EquipItem(equipItem));
+            }
+        }
+
         //소모품 구매
         public TradeResult BuyConsumItem(int _Choice)
         {
@@ -107,7 +117,7 @@ namespace TextRPG.Objects.Shop
 
         public void AddConsumItem(string _ItemName)
         {
-            ConsumItem consumItem = (ConsumItem)ConsumItemShop[_ItemName];
+            ConsumItem consumItem = ConsumItemShop[_ItemName] as ConsumItem;
             if (CheckPlayerHave(consumItem))
             {
                 ConsumItem cItem = ObjectContext.Instance.Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
