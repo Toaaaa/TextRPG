@@ -20,7 +20,8 @@ public class Battle
 
     public static Action? PlayerAction { get; set; }
     //마지막 행동 기록 (몬스터가 플레이어를 공격 할 때만 사용)
-    public int HitLastHp { get; set; }//마지막 행동에 피격당하기 전 HP를 저장.
+    public int LastHp { get; set; }//마지막 전 HP를 저장.
+    public int LastMp { get; set; }//마지막 전 MP를 저장.
     public int LastDamage { get; set; }//마지막 행동이 가한 데미지를 저장.
     public bool LastIsCritical { get; set; }//마지막 행동이 크리티컬 했는지 저장.
 
@@ -91,18 +92,18 @@ public class Battle
     //행동 + 선택
     public void PlayerAttack(Monster monster)//플레이어가 공격 선택시 호출
     {
-        HitLastHp = monster.HP;
+        LastHp = monster.HP;
         LastIsCritical = ObjectContext.Instance.Player.IsCritical();
         int realdmg = (int)Math.Ceiling((ObjectContext.Instance.Player.CalcDamage() * (1 - (monster.DEF / (20.0 + monster.DEF))))); //방어상수 20.
         realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
         monster.HP = monster.TakeDamage(realdmg);
         LastDamage = realdmg;
-        var record = new BattleActionRecord(monster, HitLastHp, LastDamage, LastIsCritical);//행동기록 저장
+        var record = new BattleActionRecord(monster, LastHp, LastDamage, LastIsCritical);//행동기록 저장
         MonsterRecords.Add(record);
     }
     public void PlayerSkillAttack(Monster monster, Skill skill)//플레이어가 스킬 공격 선택시 호출
     {
-        HitLastHp = monster.HP;
+        LastHp = monster.HP;
         int realdmg;
         LastIsCritical = ObjectContext.Instance.Player.IsCritical();
         if(skill.IgnoreDefense)
@@ -112,7 +113,7 @@ public class Battle
         realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
         monster.HP = monster.TakeDamage(realdmg);
         LastDamage = realdmg;
-        var record = new BattleActionRecord(monster, HitLastHp, LastDamage, LastIsCritical);//행동기록 저장
+        var record = new BattleActionRecord(monster, LastHp, LastDamage, LastIsCritical);//행동기록 저장
         MonsterRecords.Add(record);
     }
     public void MonsterTurn(Player player, Monster monster)//몬스터의 턴 선택시 호출
@@ -122,7 +123,7 @@ public class Battle
     }
     void MonsterAttack(Player player,Monster monster)//몬스터가 공격 선택시 호출
     {
-        HitLastHp = player.HP;
+        LastHp = player.HP;
         LastIsCritical = monster.IsCritical();
         int realdmg = (int)Math.Ceiling((monster.CalcDamage() * (1 - (player.TotalDEF / (20.0 + player.TotalDEF))))); //방어상수 20.
         realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
@@ -182,6 +183,8 @@ public class Battle
         CurrentActor = actor;
         if (actor is Player && Target?.Count >0)//플레이어 턴일 때
         {
+            LastHp = ObjectContext.Instance.Player.HP;//플레이어 HP 저장
+            LastMp = ObjectContext.Instance.Player.MP;//플레이어 MP 저장
             PlayerAction?.Invoke();
             PlayerAction = null;
         }
