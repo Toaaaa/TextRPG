@@ -486,7 +486,7 @@ public class Page
                                                 // 아이템 사용인 경우
                                                 if (selectedItem.GetValue() != null)
                                                 {
-                                                    Console.WriteLine($"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" + $"HP {player.HP} -> {player.HP}\n\n" + $"HP {player.MP} -> {player.MP}\n\n" + $"0. 다음");
+                                                    Console.WriteLine($"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" + $"HP {player.HP} -> {player.HP}\n\n" + $"HP {player.MP} -> {player.MP}\n\n" + $"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                                     break;
                                                 }
 
@@ -499,7 +499,7 @@ public class Page
                                                             $"{player.Name}가 {selectedSKill.GetValue().Name} 스킬을 사용했습니다.\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
                                                             $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n");
                                                     }
-                                                    Console.WriteLine($"\n0. 다음");
+                                                    Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                                     break;
                                                 }
  
@@ -509,7 +509,7 @@ public class Page
                                                         $"{player.Name} 의 공격!\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
                                                         $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n\n");
                                                 }
-                                                Console.WriteLine($"\n0. 다음");
+                                                Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                                 
                                             break;
                                     }
@@ -519,8 +519,10 @@ public class Page
                                         Actor monster = battle.CurrentActor;
                                         Console.WriteLine(
                                             $"{monster.Name} 의 공격!\n" + $"{player.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                            $"Lv.{player.Level} {player.Name}\nHP {player.HP + battle.LastDamage} -> {player.HP}\n\n" + $"0. 다음");
+                                            $"Lv.{player.Level} {player.Name}\nHP {player.HP + battle.LastDamage} -> {player.HP}\n\n");
                                     }
+                                    Console.WriteLine($"\n0. 다음\n원하시는 행동을 입력해주세요. >>");
+
                                     break;
                             }
                         };
@@ -564,8 +566,16 @@ public class Page
                                             
                                             
                                             if (selectedSKill.GetValue() == null) { Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerAttack((target as Monster)!)); }
-                                            else { Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue())); }
-                                            
+                                            else
+                                            {
+                                                Battle.PlayerAction = () =>
+                                                {
+                                                    battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue()));
+                                                    // 사용된 마나 감소시키기
+                                                    player.MP -= selectedSKill.GetValue().Mana;
+                                                };
+                                            }
+
                                             // 다음 턴 진행
                                             mode.SetValue("SELECT_DONE");
                                             isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
@@ -578,7 +588,12 @@ public class Page
                                             if (context.Selection > consumItems.Count() + 1) { context.Error(); break; }
                                             
                                             selectedItem.SetValue(consumItems.ElementAt(context.Selection - 1));
-                                            Battle.PlayerAction = () => selectedItem.GetValue().UseItem(player, EConsumItem.Potion);
+                                            Battle.PlayerAction = () =>
+                                            {
+                                                selectedItem.GetValue().UseItem(player, EConsumItem.Potion);
+                                                // 소모된 아이템 제거
+                                                player.Inventory.Remove(selectedItem.GetValue());
+                                            };
                                             
                                             // 다음 턴 진행
                                             mode.SetValue("SELECT_DONE");
@@ -676,7 +691,7 @@ public class Page
                     Player player = ObjectContext.Instance.Player;
                     Smith smith = ObjectContext.Instance.Smith; 
                     smith.SetPlayerEquipItemList();
-                    var equipments = player.Inventory.OfType<EquipItem>();
+                    var equipments = smith.PlayerEquipItemList;
 
                     var mode = context.States.Get<string>("MODE").Init("VIEW");
                     var result = context.States.Get<ESmithResult>("SMITH_RESULT").Init(ESmithResult.None);
@@ -692,12 +707,13 @@ public class Page
                             Console.WriteLine($"{item.Name} | {item.Explain} | +{item.Stat}");
                         }
                         
-                        if(mode.GetValue() == "VIEW") Console.WriteLine($"\n0.나가기\n1. 강화하기");
+                        if(mode.GetValue() == "VIEW") Console.WriteLine($"\n0. 나가기\n1. 강화하기\n\n원하시는 행동을 입력해주세요. >>");
                         if (mode.GetValue() == "REINFORCEMENT")
                         {
-                            Console.WriteLine($"\n0.나가기\n");
                             switch (result.GetValue())
                             {
+                                case ESmithResult.None:
+                                    break;
                                 case ESmithResult.Success:
                                     Logger.WriteLine("강화에 성공했습니다.", ConsoleColor.Green);
                                     break;
@@ -711,6 +727,7 @@ public class Page
                                     Logger.WriteLine("최대 강화치입니다.", ConsoleColor.Red);
                                     break;
                             }
+                            Console.WriteLine($"\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                         }
                     };
 
@@ -735,7 +752,7 @@ public class Page
                             case "REINFORCEMENT":
                                 result.SetValue(ESmithResult.None);
                                 
-                                if(context.Selection== 0) { mode.SetValue("VIEW"); break; }
+                                if(context.Selection == 0) { mode.SetValue("VIEW"); break; }
                                 if(context.Selection > equipments.Count()) { context.Error(); return; }
 
                                 result.SetValue(smith.ReinforceItem(context.Selection));
