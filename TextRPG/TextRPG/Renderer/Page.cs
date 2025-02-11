@@ -718,7 +718,6 @@ public class Page
                     Battle battle = ObjectContext.Instance.Battle;
                     
                     // rewards
-                    var items = battle.RewardItems;
                     var experience = battle.GetTotalExp();
                     var gold = battle.GetTotalGold(); 
                     
@@ -743,7 +742,7 @@ public class Page
                     context.Choice = () =>
                     {
                         if(context.Selection != 0) { context.Error(); return; }
-                        
+                        battle.EndBattle();
                         _router.PopState(3);
                     };
                 })
