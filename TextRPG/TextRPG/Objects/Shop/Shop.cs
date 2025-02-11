@@ -62,7 +62,7 @@ namespace TextRPG.Objects.Shop
                 {
                     if (ObjectContext.Instance.Player.Gold > equipItem.Price)
                     {
-                        ObjectContext.Instance.Player.GetItem(equipItem);
+                        ObjectContext.Instance.Player.GetItem(new EquipItem(equipItem));
                         ObjectContext.Instance.Player.Gold -= equipItem.Price;
 
                         return TradeResult.Success;
