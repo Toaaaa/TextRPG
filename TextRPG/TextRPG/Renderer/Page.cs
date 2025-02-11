@@ -513,7 +513,10 @@ public class Page
                                                 // 아이템 사용인 경우
                                                 if (selectedItem.GetValue() != null)
                                                 {
-                                                    Console.WriteLine($"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" + $"HP {player.HP} -> {player.HP}\n\n" + $"HP {player.MP} -> {player.MP}\n\n" + $"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
+                                                    Console.WriteLine(
+                                                        $"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" 
+                                                        + $"HP {battle.LastHp} -> {player.HP}\n\n" + $"HP {battle.LastMp} -> {player.MP}\n\n"
+                                                        + $"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                                     break;
                                                 }
 
@@ -522,12 +525,12 @@ public class Page
                                                 {
                                                     if(player.IsCritical()) Console.WriteLine("[치명타 공격!]");
                                                     Console.WriteLine($"{player.Name}가 {selectedSKill.GetValue().Name} 스킬을 사용했습니다.\n");
-                                                    foreach (Actor monster in battle.Target)
+                                                    foreach (Monster monster in battle.Target)
                                                     {
                                                         // 체력이 0 일때 값이 달라짐
                                                         Console.WriteLine(
                                                             $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                                            $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n");
+                                                            $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.BeforeHP} -> {monster.HP}\n");
                                                     }
                                                     Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                                     break;
@@ -536,11 +539,11 @@ public class Page
                                                 // 일반 공격
                                                 if(player.IsCritical()) Console.WriteLine("[치명타 공격!]");
                                                 
-                                                foreach (Actor monster in battle.Target)
+                                                foreach (Monster monster in battle.Target)
                                                 {
                                                     Console.WriteLine(
                                                         $"{player.Name} 의 공격!\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                                        $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n");
+                                                        $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.BeforeHP} -> {monster.HP}\n");
                                                 }
                                                 Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                                 
