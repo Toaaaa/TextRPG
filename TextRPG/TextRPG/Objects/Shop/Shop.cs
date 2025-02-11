@@ -31,6 +31,7 @@ namespace TextRPG.Objects.Shop
             EquipItemShop = new OrderedDictionary();
             ConsumItemShop = new OrderedDictionary();
             LoadItem();
+            int i = 0;
         }
 
         //public
@@ -155,67 +156,75 @@ namespace TextRPG.Objects.Shop
             }
         }
         //private
-        private void LoadItem()
+        void LoadItem()
         {
             string filePath;
             string json;
 
             // 장비 아이템 읽어오기
-            {
-                filePath = Path.Combine(Path.GetFullPath(@"../../../Objects/Items/EquipItem.json"));
-                if (!File.Exists(filePath))
-                {
-                    Logger.Debug("파일을 찾을 수 없습니다.");
-                    return;
-                }
+            //{
+            //    filePath = Path.Combine(Path.GetFullPath(@"../../../Objects/Items/EquipItem.json"));
+            //    if (!File.Exists(filePath))
+            //    {
+            //        Logger.Debug("파일을 찾을 수 없습니다.");
+            //        return;
+            //    }
 
-                json = File.ReadAllText(filePath);
+            //    json = File.ReadAllText(filePath);
 
-                JsonSerializerOptions options = new JsonSerializerOptions
-                {
-                    Converters = { new JsonStringEnumConverter() }
-                };
+            //    JsonSerializerOptions options = new JsonSerializerOptions
+            //    {
+            //        Converters = { new JsonStringEnumConverter() }
+            //    };
 
-                Dictionary<string, EquipItem> itemData = JsonSerializer.Deserialize<Dictionary<string, EquipItem>>(json, options);
+            //    Dictionary<string, EquipItem> eItemData = JsonSerializer.Deserialize<Dictionary<string, EquipItem>>(json, options);
 
-                foreach (var data in itemData)
-                {
-                    string key = data.Key;
-                    EquipItem item = data.Value;
+            //    foreach (var data in eItemData)
+            //    {
+            //        string key = data.Key;
+            //        EquipItem item = data.Value;
 
-                    AllItem[key] = item;
+            //        AllItem[key] = item;
 
-                    EquipItemShop[key] = item;
-                }
-            }
+            //        EquipItemShop[key] = item;
+            //    }
+            //}
+            LoadItemFile<EquipItem, OrderedDictionary>(@"../../../Objects/Items/EquipItem.json", EquipItemShop);
 
             //소모품 읽어오기
+            LoadItemFile<ConsumItem, OrderedDictionary>(@"../../../Objects/Items/ConsumItem.json", ConsumItemShop);
+        }
+
+        void LoadItemFile<TClass, TDictionary>(string _FilePath, TDictionary _Dictionary) 
+            where TClass : Item 
+            where TDictionary : IDictionary
+        {
+            string json;
+
+            _FilePath = Path.Combine(Path.GetFullPath(_FilePath));
+            if (!File.Exists(_FilePath))
             {
-                filePath = Path.Combine(Path.GetFullPath(@"../../../Objects/Items/EquipItem.json"));
-                if (!File.Exists(filePath))
-                {
-                    Logger.Debug("파일을 찾을 수 없습니다.");
-                    return;
-                }
+                Logger.Debug("파일을 찾을 수 없습니다.");
+                return;
+            }
 
-                json = File.ReadAllText(filePath);
+            json = File.ReadAllText(_FilePath);
 
-                JsonSerializerOptions options = new JsonSerializerOptions
-                {
-                    Converters = { new JsonStringEnumConverter() }
-                };
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter() }
+            };
 
-                Dictionary<string, ConsumItem> itemData = JsonSerializer.Deserialize<Dictionary<string, ConsumItem>>(json, options);
+            Dictionary<string, TClass>? itemData = JsonSerializer.Deserialize<Dictionary<string, TClass>>(json, options);
 
-                foreach (var data in itemData)
-                {
-                    string key = data.Key;
-                    ConsumItem item = data.Value;
+            foreach (var data in itemData)
+            {
+                string key = data.Key;
+                TClass item = data.Value;
 
-                    AllItem[key] = item;
+                AllItem[key] = item;
 
-                    ConsumItemShop[key] = item;
-                }
+                _Dictionary[key] = item;
             }
         }
     }

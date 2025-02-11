@@ -33,31 +33,34 @@ namespace TextRPG.Objects.Items
         //public
         public void UseItem(Player _Player, EConsumItem _Category)
         {
-            switch (_Category)
+            if (0 < Num)
             {
-                case EConsumItem.Potion:
-                    switch (Name)
-                    {
-                        case "포션":
-                            _Player.HP += 30;
-                            
-                            break;
-                        case "하이 포션":
-                            _Player.HP += 50;
-                            break;
-                        default:
-                            Logger.Debug("존재하지 않는 포션 이름입니다.");
-                            break;
-                    }
+                switch (_Category)
+                {
+                    case EConsumItem.Potion:
+                        switch (Name)
+                        {
+                            case "포션":
+                                _Player.HP += 30;
 
-                    if (_Player.HP > _Player.MaxHP)
-                    {
-                        _Player.HP = _Player.MaxHP;
-                    }
-                    break;
-                default:
-                    Logger.Debug("존재하지 않는 아이템 유형입니다.");
-                    break;
+                                break;
+                            case "하이 포션":
+                                _Player.HP += 50;
+                                break;
+                            default:
+                                Logger.Debug("존재하지 않는 포션 이름입니다.");
+                                break;
+                        }
+
+                        if (_Player.HP > _Player.MaxHP)
+                        {
+                            _Player.HP = _Player.MaxHP;
+                        }
+                        break;
+                    default:
+                        Logger.Debug("존재하지 않는 아이템 유형입니다.");
+                        break;
+                }
             }
         }
     }
