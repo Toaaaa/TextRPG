@@ -472,6 +472,8 @@ public class Page
                         Dungeon dungeon = ObjectContext.Instance.Dungeon;
                         Battle battle = ObjectContext.Instance.Battle;
                         Shop shop = ObjectContext.Instance.Shop;
+                        
+                        Dictionary<string, Skill> skills = Skill.LoadSkillDictionary(Path.Combine(Path.GetFullPath(@"../../../Objects/SkillList.json")));
 
                         var mode = states.Get<string>("MODE").Init("WAITING");
                         var isPlayerTurn = states.Get<bool?>("TURN").Init(null);
@@ -536,19 +538,18 @@ public class Page
                                                 switch (mode.GetValue())
                                                 {
                                                     case "WAITING":
-                                                        Console.WriteLine("1. 공격\n2. 스킬\n3. 아이템");
+                                                        Console.WriteLine("0. 나가기\n1. 공격\n2. 스킬\n3. 아이템");
                                                         break;
                                                     case "CHOOSE_TARGET":
                                                         Console.WriteLine("0. 취소");
                                                         break;
                                                     case "SELECT_SKILL":
-                                                        // Skill[] Skills = player.Skills;
-                                                        // for (int index = 0; index < player.Skills.Count; index++)
-                                                        // {
-                                                            // Skill currentSkill = Skill[index]; 
-                                                            // Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
-                                                            // Console.WriteLine(currentSkill.Name);
-                                                        // }
+                                                        for (int index = 0; index < skills.Count(); index++)
+                                                        {
+                                                            Skill currentSkill = skills.ElementAt(index).Value; 
+                                                            Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
+                                                            Console.WriteLine($"{currentSkill.Name} | {currentSkill.Explain} | {currentSkill.Mana}MP");
+                                                        }
                                                         
                                                         Console.WriteLine("\n0. 취소");
                                                         break;
@@ -569,13 +570,28 @@ public class Page
                                             }
                                         case "SELECT_DONE":
                                             {
+                                                // 아이템 사용인 경우
+                                                if (selectedItem.GetValue() != null)
+                                                {
+                                                    Console.WriteLine(
+                                                    $"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" +
+                                                    $"HP {player.HP} -> {player.HP}\n\n" +
+                                                    $"HP {player.MP} -> {player.MP}\n\n" +
+                                                    $"0. 다음"
+                                                    );
+                                                    
+                                                    break;
+                                                }
+
                                                 Monster monster = battle.TargetMonster;
                                                 Console.WriteLine(
                                                     $"{player.Name} 의 공격!\n" +
                                                     $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
                                                     // 체력이 0 일때 값이 달라짐
-                                                    $"Lv.{monster.Level} {monster.Name}\nHP {monster.HP + battle.LastDamage} -> {monster.HP}\n\n" +
-                                                    $"0. 다음");
+                                                    $"Lv.{monster.Level} {monster.Name}\n" +
+                                                    $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n\n" +
+                                                    $"0. 다음"
+                                                    );
                                             }
                                             break;
                                     }
@@ -604,6 +620,9 @@ public class Page
                                         case "WAITING":
                                                 switch (context.Selection)
                                                 {
+                                                    case 0:
+                                                        _router.PopState();
+                                                        break;
                                                     case 1:
                                                         mode.SetValue("CHOOSE_TARGET");
                                                         break;
@@ -618,6 +637,16 @@ public class Page
                                                         break;
                                                 }
                                             break;
+                                        
+                                        case "SELECT_SKILL":
+                                            if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
+                                            // 스킬 카운트
+                                            // if (context.Selection > consumItems.Count() + 1) { context.Error(); break; }
+                                            // Battle.PlayerAction = () => 
+                                            
+                                            mode.SetValue("CHOOSE_TARGET");
+                                            break;
+                                        
                                         case "CHOOSE_TARGET":
                                             if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
                                             if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
@@ -632,38 +661,27 @@ public class Page
                                             battle.TurnStart();
                                             cycle.SetValue(prev => prev + 1);
                                             break;
-                                        case "SELECT_SKILL":
-                                            if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
-
-                                            mode.SetValue("SELECT_DONE");
-                                            isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
-                                            battle.TurnStart();
-                                            cycle.SetValue(prev => prev + 1);
-                                            break;
+                                      
                                         case "USING_ITEM":
                                             var consumItems = player.Inventory.OfType<ConsumItem>();
-                                            
                                             if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
                                             if (context.Selection > consumItems.Count() + 1) { context.Error(); break; }
                                             
                                             selectedItem.SetValue(consumItems.ElementAt(context.Selection - 1));
+                                            // Battle.PlayerAction = () => selectedItem.GetValue().UseItem(player, EConsumItem.Potion);
                                             
                                             mode.SetValue("SELECT_DONE");
                                             isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
                                             battle.TurnStart();
                                             cycle.SetValue(prev => prev + 1);
                                             break;
+                                        
                                         case "SELECT_DONE":
                                             {
                                                 if(context.Selection != 0) { context.Error(); return; }
                                                 if (battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
                                                 mode.SetValue("WAITING");
 
-                                                if (selectedItem.GetValue() != null)
-                                                {
-                                                    selectedItem.GetValue().UseItem(player, EConsumItem.Potion);
-                                                }
-                                                
                                                 // 사이클이 끝난 경우, 죽은 몬스터를 통해 사이클 다시 체크(죽은 몬스터 발생 시 최대 사이클 변화되도록 관리)
                                                 if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); break; }
                                                
