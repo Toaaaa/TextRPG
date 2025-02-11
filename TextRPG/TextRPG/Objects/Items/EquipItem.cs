@@ -16,6 +16,7 @@ namespace TextRPG.Objects.Items
 {
     public class EquipItem : Item
     {
+        // 생성자
         public EquipItem()
         {
             ReinforceStat = 0;
@@ -57,14 +58,14 @@ namespace TextRPG.Objects.Items
         }
 
         //public
-        public EEquipPart Part { get; set; }
+        public EEquipPart Part { get; set; } // 장착 부위
 
         public int TotalStat { get; set; } // 총 스탯
         public int Stat { get; set; } // 기초 스탯
         public int ReinforceStat { get; set; } // 강화 스탯
 
-        public bool IsEquip { get; set; }
+        public bool IsEquip { get; set; } // 장착 유무
 
-        public int ReinforcementLevel { get; set; }
+        public int ReinforcementLevel { get; set; } // 강화 단계
     }
 }

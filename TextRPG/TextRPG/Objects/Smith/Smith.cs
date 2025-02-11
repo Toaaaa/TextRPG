@@ -19,12 +19,14 @@ namespace TextRPG.Objects.Smith
 {
     public class Smith
     {
+        // 생성자
         public Smith()
         {
             PlayerEquipItemList = new List<EquipItem>();
             ReinforceRequirement = new List<ReinforceRequirementData>();
         }
 
+        //public
         public List<EquipItem> PlayerEquipItemList { get; private set; }
 
         public List<ReinforceRequirementData> ReinforceRequirement { get; private set; } // 강화에 필요한 재료들을 모아놓은 컬렉션
@@ -35,6 +37,7 @@ namespace TextRPG.Objects.Smith
             public int RequirementReinforceStone; // 강화에 필요한 강화석
         }
 
+        //public
         public void SetPlayerEquipItemList()
         {
             PlayerEquipItemList.Clear();

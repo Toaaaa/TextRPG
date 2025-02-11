@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +8,7 @@ namespace TextRPG.Objects.Items
 {
     public class Item
     {
+        // 생성자
         public Item() { }
 
         //public
