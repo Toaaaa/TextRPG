@@ -520,6 +520,7 @@ public class Page
                                                 // 스킬 사용의 경우
                                                 if (selectedSKill.GetValue() != null)
                                                 {
+                                                    if(player.IsCritical()) Console.WriteLine("[치명타 공격!]");
                                                     Console.WriteLine($"{player.Name}가 {selectedSKill.GetValue().Name} 스킬을 사용했습니다.\n");
                                                     foreach (Actor monster in battle.Target)
                                                     {
@@ -532,6 +533,9 @@ public class Page
                                                     break;
                                                 }
  
+                                                // 일반 공격
+                                                if(player.IsCritical()) Console.WriteLine("[치명타 공격!]");
+                                                
                                                 foreach (Actor monster in battle.Target)
                                                 {
                                                     Console.WriteLine(
@@ -546,6 +550,7 @@ public class Page
                                 case false:
                                     {
                                         Actor monster = battle.CurrentActor;
+                                        if(monster.IsCritical()) Console.WriteLine("[치명타 공격!]");
                                         Console.WriteLine(
                                             $"{monster.Name} 의 공격!\n" + $"{player.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
                                             $"Lv.{player.Level} {player.Name}\nHP {player.HP + battle.LastDamage} -> {player.HP}\n");
