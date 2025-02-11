@@ -9,6 +9,8 @@ public class Player : Actor
     public int AddHP { get; set; }
     public string Class { get; set; }
     public List<Item> Inventory { get; set; }
+    public int MaxMP { get; set; }
+    public int MP { get; set; }
 
     public Player(string name)
     {
@@ -21,10 +23,13 @@ public class Player : Actor
         AddDefense = 0;
         MaxHP = 50;
         HP = 50;
+        MaxMP = 30;
+        MP = 30;
         AddHP = 0;
         Gold = 1500;
         EXP = 0;
         SPD = 5;
+        CRIT = 10;
         Inventory = new List<Item>();
     }
     
@@ -107,7 +112,14 @@ public class Player : Actor
         int damage = (int)(TotalATK * (random.Next(90, 111) / 100.0f));
         return damage;
     }
-
+    
+    // 스킬 데미지 계산
+    public int SkillDamage(Skill skill)
+    {
+        int damage = CalcDamage();
+        int skillDamage = damage + (int)(damage * (skill.Percent / 100.0f));
+        return skillDamage;
+    }
     
     // 데미지 받아서 체력 -
     public int TakeDamage(int damage)
@@ -120,7 +132,9 @@ public class Player : Actor
     {
         Level++;
         MaxHP += Level * 5;
+        MaxMP += Level * 3;
         HP = MaxHP;
+        MP = MaxMP;
         TotalATK += 5;
         TotalDEF += 2;
         EXP = 0;
