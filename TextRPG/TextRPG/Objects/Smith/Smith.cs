@@ -72,50 +72,45 @@ namespace TextRPG.Objects.Smith
                 Logger.Debug("존재하지 않는 장비를 강화하려했습니다.");
             }
 
-            if (10 > reinforceItem.ReinforcementLevel) // 최대 강화 체크
-            {
-                ConsumItem reinforceStone = ObjectContext.Instance.Player.Inventory.FirstOrDefault(item => item.Name == "강화석") as ConsumItem;
-                if (null == reinforceStone) // 강화석 유무 체크
-                {
-                    return ESmithResult.Failed_NotEnoughStone;
-                }
-
-                if (reinforceStone.Num >= requirementReinforceStone) // 강화에 충분한 양의 강화석이 있는지 체크
-                {
-                    reinforcePrice = (reinforceItem.ReinforcementLevel * 300) + 500;
-
-                    if (reinforcePrice <= ObjectContext.Instance.Player.Gold) // 강화비용이 충분한지 체크
-                    {
-                        EquipItem shopItem = (EquipItem)ObjectContext.Instance.Shop.EquipItemShop[reinforceItem.Name];
-
-                        ObjectContext.Instance.Player.Gold -= reinforcePrice;
-                        reinforceStone.Num -= requirementReinforceStone;
-
-                        reinforceItem.ReinforcementLevel++;
-                        reinforceItem.ReinforceStat = shopItem.Stat + ((int)Math.Ceiling(shopItem.Stat * 0.25) * reinforceItem.ReinforcementLevel);
-                        reinforceItem.TotalStat = reinforceItem.Stat + reinforceItem.ReinforceStat;
-
-                        if (0 == reinforceStone.Num) // 이번 강화로 강화석이 0이 되었는지 체크
-                        {
-                            ObjectContext.Instance.Player.RemoveItem(reinforceStone);
-                        }
-
-                        return ESmithResult.Success;
-                    }
-                    else
-                    {
-                        return ESmithResult.Failed_NotEnoughGold;
-                    }
-                }
-                else
-                {
-                    return ESmithResult.Failed_NotEnoughStone;
-                }
-            }
-            else
+            if (10 <= reinforceItem.ReinforcementLevel) // 최대 강화 체크
             {
                 return ESmithResult.Failed_MaxReinforce;
             }
+
+            ConsumItem reinforceStone = ObjectContext.Instance.Player.Inventory.FirstOrDefault(item => item.Name == "강화석") as ConsumItem;
+
+            if (null == reinforceStone) // 강화석 유무 체크
+            {
+                return ESmithResult.Failed_NotEnoughStone;
+            }
+
+            if (reinforceStone.Num < requirementReinforceStone) // 강화에 충분한 양의 강화석이 있는지 체크
+            {
+                return ESmithResult.Failed_NotEnoughStone;
+            }
+
+            reinforcePrice = (reinforceItem.ReinforcementLevel * 300) + 500;
+
+            if (reinforcePrice > ObjectContext.Instance.Player.Gold) // 강화비용이 충분한지 체크
+            {
+                return ESmithResult.Failed_NotEnoughGold;
+            }
+
+            EquipItem shopItem = (EquipItem)ObjectContext.Instance.Shop.EquipItemShop[reinforceItem.Name];
+
+            ObjectContext.Instance.Player.Gold -= reinforcePrice;
+            reinforceStone.Num -= requirementReinforceStone;
+
+            reinforceItem.ReinforcementLevel++;
+            reinforceItem.ReinforceStat = shopItem.Stat + ((int)Math.Ceiling(shopItem.Stat * 0.25) * reinforceItem.ReinforcementLevel);
+            reinforceItem.TotalStat = reinforceItem.Stat + reinforceItem.ReinforceStat;
+
+            if (0 == reinforceStone.Num) // 이번 강화로 강화석이 0이 되었는지 체크
+            {
+                ObjectContext.Instance.Player.RemoveItem(reinforceStone);
+            }
+
+            return ESmithResult.Success;
         }
     }
 }

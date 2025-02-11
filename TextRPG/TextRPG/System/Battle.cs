@@ -9,7 +9,7 @@ public class Battle
 {
     private int TotalExp { get; set; }
     private int TotalGold { get; set; }
-    public List<Item>? RewardItems { get; set; }
+    public List<string>? RewardItems { get; set; }//보상 아이템의 스트링 데이터.
     public List<Actor>? Target { get; set; }
     public Actor? CurrentActor { get; set; }
 
@@ -134,7 +134,7 @@ public class Battle
     {
         TotalExp += monster.EXP;
         TotalGold += monster.Gold;
-        //아이템 드랍.
+        RewardItems?.AddRange(monster.DroppedItems);
     }
     public void SetTargetMonster(List<Monster> monsters)//타겟 몬스터 설정
     {
@@ -159,7 +159,8 @@ public class Battle
     {
         TotalExp = 0;
         TotalGold = 0;
-        
+        RewardItems?.Clear();
+
         actors.Clear();
         TurnQueue.Clear();
         
@@ -215,6 +216,19 @@ public class Battle
         else
             return MonsterList.All(monster => monster.IsDead);
     }
+    public void EndBattle()//전투 종료시 호출, 보상 지급.
+    {
+        ObjectContext.Instance.Player.EXP += TotalExp;
+        ObjectContext.Instance.Player.Gold += TotalGold;
+        if(RewardItems != null)
+        {
+            foreach (var item in RewardItems)
+            {
+                ObjectContext.Instance.Shop.AddConsumItem(item);
+            }
+        }
+    }
+
     public void EraseRecord()//모든 행동 기록 삭제
     {
         MonsterRecords?.Clear();
