@@ -85,6 +85,7 @@ public class Battle
     //행동 + 선택
     public void PlayerAttack(Monster monster)//플레이어가 공격 선택시 호출
     {
+        HitLastHp = monster.HP;
         LastIsCritical = ObjectContext.Instance.Player.IsCritical();
         int realdmg = (int)Math.Ceiling((ObjectContext.Instance.Player.CalcDamage() * (1 - (monster.DEF / (20.0 + monster.DEF))))); //방어상수 20.
         realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
@@ -98,6 +99,7 @@ public class Battle
     }
     void MonsterAttack(Player player,Monster monster)//몬스터가 공격 선택시 호출
     {
+        HitLastHp = player.HP;
         LastIsCritical = monster.IsCritical();
         int realdmg = (int)Math.Ceiling((monster.CalcDamage() * (1 - (player.TotalDEF / (20.0 + player.TotalDEF))))); //방어상수 20.
         realdmg = LastIsCritical ? (int)Math.Ceiling(realdmg * 1.5) : realdmg;
