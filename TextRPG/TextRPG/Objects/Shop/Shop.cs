@@ -154,6 +154,7 @@ namespace TextRPG.Objects.Shop
                 Logger.Debug("인벤토리에 존재하지 않는 아이템을 판매하려 했습니다.");
             }
         }
+
         //private
         void LoadItem()
         {

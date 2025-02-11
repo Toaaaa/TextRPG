@@ -16,6 +16,7 @@ namespace TextRPG.Objects.Items
 {
     public class EquipItem : Item
     {
+        // 생성자
         public EquipItem()
         {
             ReinforceStat = 0;

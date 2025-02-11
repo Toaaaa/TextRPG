@@ -16,6 +16,7 @@ namespace TextRPG.Objects.Items
 {
     public class ConsumItem : Item
     {
+        // 생성자
         public ConsumItem()
         {
             Num = 1;
@@ -38,9 +39,9 @@ namespace TextRPG.Objects.Items
         }
 
         //public
-        public EConsumItem Category { get; set; }
+        public EConsumItem Category { get; set; } // 소모품 유형
 
-        public int Num { get; set; }
+        public int Num { get; set; } // 소모품 갯수
 
         //public
         public void UseItem(Player _Player, EConsumItem _Category)
