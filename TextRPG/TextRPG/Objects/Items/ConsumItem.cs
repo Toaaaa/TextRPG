@@ -9,7 +9,8 @@ public enum EConsumItem
 {
     None,
     Potion,
-    Reinforcement
+    Reinforcement,
+    Enrichment
 }
 
 namespace TextRPG.Objects.Items
