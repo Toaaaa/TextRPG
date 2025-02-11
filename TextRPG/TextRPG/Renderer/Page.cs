@@ -153,12 +153,13 @@ public class Page
                 {
                     Player player = ObjectContext.Instance.Player;
                     var equipments = player.Inventory.OfType<EquipItem>();
+                    var consumItems = player.Inventory.OfType<ConsumItem>();
                     
                     var mode = states.Get<string>("MODE").Init("VIEW");
 
                     context.Content = () =>
                     {
-                        Console.WriteLine($"인벤토리\n" + $"보유 중인 아이템을 관리할 수 있습니다.\n\n" + $"[아이템 목록]");
+                        Console.WriteLine($"인벤토리\n" + $"보유 중인 아이템을 관리할 수 있습니다.\n\n" + $"[장비 목록]");
                         
                         for (int i = 0; i < equipments.Count(); i++)
                         {
@@ -171,6 +172,14 @@ public class Page
                             Console.WriteLine($"{item.Name} | {item.Explain} | +{item.Stat}");
                         }
                         Console.ResetColor();
+                        
+                        Console.WriteLine($"\n[아이템 목록]");
+                        for (int i = 0; i < consumItems.Count(); i++)
+                        {
+                            ConsumItem currentItem = consumItems.ElementAt(i);
+                            Console.Write($"{i + 1}. ");
+                            Console.WriteLine($"{currentItem.Name} | {currentItem.Explain} | {currentItem.Num}개");
+                        }
 
                         switch (mode.GetValue())
                         {
@@ -262,10 +271,13 @@ public class Page
                                         break;
                                     
                                     case "CONSUM":
+                                        // Logger.Debug(player.Inventory.Count().ToString());
                                         for (int i = 0; i < consumItems.Count; i++)
                                         {
-                                            Item item = (Item)consumItems[i];
-                                            Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
+                                            ConsumItem currentItem = (ConsumItem)consumItems[i];
+                                            // 다른 객체라 값으로 비교
+                                            var existItemByName = player.Inventory.Find(item => item.Name == currentItem.Name) as ConsumItem;
+                                            Console.WriteLine($"{i + 1}. { currentItem.Name} | {currentItem.Explain} | {currentItem.Price}G | {(existItemByName == null ? "0" :  existItemByName.Num)} 개 보유 중");
                                         }
                                         
                                         if(result.GetValue() == TradeResult.Success) Logger.WriteLine("\n구매를 성공했습니다.", ConsoleColor.Green);
@@ -444,7 +456,12 @@ public class Page
                                                 for (int index = 0; index < dungeon.MonsterList.Count; index++)
                                                 {
                                                     Monster monster = dungeon.MonsterList[index];
+
                                                     if (mode.GetValue() == "CHOOSE_TARGET") Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
+                                                    
+                                                    // 중복 선택 시, 이미 선택된 몬스터 표시
+                                                    if (battle.Target != null && battle.Target.Contains(monster))
+                                                        Console.ForegroundColor = ConsoleColor.Cyan;
 
                                                     // 죽은 몬스터는 아예 선택이 안되도록 처리해도 좋을 듯.
                                                     if (monster.IsDead) Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -499,6 +516,7 @@ public class Page
                                                     break;
                                                 }
 
+                                                // 스킬 사용의 경우
                                                 if (selectedSKill.GetValue() != null)
                                                 {
                                                     Console.WriteLine($"{player.Name}가 {selectedSKill.GetValue().Name} 스킬을 사용했습니다.\n");
@@ -562,7 +580,8 @@ public class Page
                                             
                                             if(currentSkill.Mana > player.MP) { context.Error("마나가 부족합니다."); return; }
                                             selectedSKill.SetValue(currentSkill);
-
+                                            
+                                            // 전체 공격일 경우, 선택을 생략한다.
                                             if (currentSkill.MultiHit)
                                             {
                                                 // 타겟 선정 페이지로 갈 필요가 없어서 액션도 여기서 설정해줘야 함.
@@ -734,12 +753,13 @@ public class Page
                 {   
                     Player player = ObjectContext.Instance.Player;
                     Smith smith = ObjectContext.Instance.Smith; 
-                    smith.SetPlayerEquipItemList();
                     var equipments = smith.PlayerEquipItemList;
 
                     var mode = context.States.Get<string>("MODE").Init("VIEW");
                     var result = context.States.Get<ESmithResult>("SMITH_RESULT").Init(ESmithResult.None);
 
+                    context.Mount = () => smith.SetPlayerEquipItemList();
+                    
                     context.Content = () =>
                     {
                         Console.WriteLine("강화소\n무기를 강화하실 수 있습니다.\n");
