@@ -1,5 +1,6 @@
 
 using System.Collections;
+using System.Diagnostics;
 using TextRPG;
 using TextRPG.Objects;
 using TextRPG.Objects.Items;
@@ -152,12 +153,13 @@ public class Page
                 {
                     Player player = ObjectContext.Instance.Player;
                     var equipments = player.Inventory.OfType<EquipItem>();
+                    var consumItems = player.Inventory.OfType<ConsumItem>();
                     
                     var mode = states.Get<string>("MODE").Init("VIEW");
 
                     context.Content = () =>
                     {
-                        Console.WriteLine($"인벤토리\n" + $"보유 중인 아이템을 관리할 수 있습니다.\n\n" + $"[아이템 목록]");
+                        Console.WriteLine($"인벤토리\n" + $"보유 중인 아이템을 관리할 수 있습니다.\n\n" + $"[장비 목록]");
                         
                         for (int i = 0; i < equipments.Count(); i++)
                         {
@@ -170,6 +172,14 @@ public class Page
                             Console.WriteLine($"{item.Name} | {item.Explain} | +{item.Stat}");
                         }
                         Console.ResetColor();
+                        
+                        Console.WriteLine($"\n[아이템 목록]");
+                        for (int i = 0; i < consumItems.Count(); i++)
+                        {
+                            ConsumItem currentItem = consumItems.ElementAt(i);
+                            Console.Write($"{i + 1}. ");
+                            Console.WriteLine($"{currentItem.Name} | {currentItem.Explain} | {currentItem.Num}개");
+                        }
 
                         switch (mode.GetValue())
                         {
@@ -261,10 +271,13 @@ public class Page
                                         break;
                                     
                                     case "CONSUM":
+                                        // Logger.Debug(player.Inventory.Count().ToString());
                                         for (int i = 0; i < consumItems.Count; i++)
                                         {
-                                            Item item = (Item)consumItems[i];
-                                            Console.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {item.Price}G");
+                                            ConsumItem currentItem = (ConsumItem)consumItems[i];
+                                            // 다른 객체라 값으로 비교
+                                            var existItemByName = player.Inventory.Find(item => item.Name == currentItem.Name) as ConsumItem;
+                                            Console.WriteLine($"{i + 1}. { currentItem.Name} | {currentItem.Explain} | {currentItem.Price}G | {(existItemByName == null ? "0" :  existItemByName.Num)} 개 보유 중");
                                         }
                                         
                                         if(result.GetValue() == TradeResult.Success) Logger.WriteLine("\n구매를 성공했습니다.", ConsoleColor.Green);
@@ -395,12 +408,12 @@ public class Page
                         var isPlayerTurn = states.Get<bool?>("TURN").Init(true);
                         var cycle = states.Get<int?>("CYCLE").Init(0);
                         
-                        // 배틀 관련 
-                        int GetCurrentMaxTurnCycle() => battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1;
+                        // 배틀 관련 : null 방지 추가
+                        int GetCurrentMaxTurnCycle() => (battle.GetAliveMonsterList() ?? []).Count() + 1;
                         void RefillTurnCycle() {
                             // 현재 남은 몬스터를 기준으로 queue 재할당
                             List<Actor> currentActors = new List<Actor>() {};
-                            currentActors.AddRange(battle.MonsterList!.FindAll(monster => !monster.IsDead));
+                            currentActors.AddRange(battle.GetAliveMonsterList() ?? []);
                             currentActors.Add(player);
                             battle.TurnQueue = battle.GetTurnQueue(currentActors);
                                                 
@@ -408,11 +421,19 @@ public class Page
                             isPlayerTurn.SetValue(true);
                             cycle.SetValue(0);
                         }
+                        void ExecuteTurnBySelectDone()
+                        {
+                            // 다음 턴 진행
+                            mode.SetValue("SELECT_DONE");
+                            isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
+                            battle.TurnStart();
+                            cycle.SetValue(prev => prev + 1);
+                        }
                         
                         var consumItems = player.Inventory.OfType<ConsumItem>();
                         var selectedSKill = states.Get<Skill?>("SELECTED_SKILL").Init(null);
                         var selectedItem = states.Get<ConsumItem?>("SELECTED_ITEM").Init(null);
-                        // do: 한번만 호출 필요
+                        // do: 한번만 호출 필요(스킬 클래스에 스태틱으로)
                         Dictionary<string, Skill> skills = Skill.LoadSkillDictionary(Path.Combine(Path.GetFullPath(@"../../../Objects/SkillList.json")));
 
                             
@@ -435,7 +456,12 @@ public class Page
                                                 for (int index = 0; index < dungeon.MonsterList.Count; index++)
                                                 {
                                                     Monster monster = dungeon.MonsterList[index];
+
                                                     if (mode.GetValue() == "CHOOSE_TARGET") Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
+                                                    
+                                                    // 중복 선택 시, 이미 선택된 몬스터 표시
+                                                    if (battle.Target != null && battle.Target.Contains(monster))
+                                                        Console.ForegroundColor = ConsoleColor.Cyan;
 
                                                     // 죽은 몬스터는 아예 선택이 안되도록 처리해도 좋을 듯.
                                                     if (monster.IsDead) Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -490,13 +516,15 @@ public class Page
                                                     break;
                                                 }
 
+                                                // 스킬 사용의 경우
                                                 if (selectedSKill.GetValue() != null)
                                                 {
+                                                    Console.WriteLine($"{player.Name}가 {selectedSKill.GetValue().Name} 스킬을 사용했습니다.\n");
                                                     foreach (Actor monster in battle.Target)
                                                     {
                                                         // 체력이 0 일때 값이 달라짐
                                                         Console.WriteLine(
-                                                            $"{player.Name}가 {selectedSKill.GetValue().Name} 스킬을 사용했습니다.\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
+                                                            $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
                                                             $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n");
                                                     }
                                                     Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
@@ -507,7 +535,7 @@ public class Page
                                                 {
                                                     Console.WriteLine(
                                                         $"{player.Name} 의 공격!\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                                        $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n\n");
+                                                        $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.HP + battle.LastDamage} -> {monster.HP}\n");
                                                 }
                                                 Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                                 
@@ -519,9 +547,9 @@ public class Page
                                         Actor monster = battle.CurrentActor;
                                         Console.WriteLine(
                                             $"{monster.Name} 의 공격!\n" + $"{player.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                            $"Lv.{player.Level} {player.Name}\nHP {player.HP + battle.LastDamage} -> {player.HP}\n\n");
+                                            $"Lv.{player.Level} {player.Name}\nHP {player.HP + battle.LastDamage} -> {player.HP}\n");
                                     }
-                                    Console.WriteLine($"\n0. 다음\n원하시는 행동을 입력해주세요. >>");
+                                    Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
 
                                     break;
                             }
@@ -552,7 +580,21 @@ public class Page
                                             
                                             if(currentSkill.Mana > player.MP) { context.Error("마나가 부족합니다."); return; }
                                             selectedSKill.SetValue(currentSkill);
+                                            
+                                            // 전체 공격일 경우, 선택을 생략한다.
+                                            if (currentSkill.MultiHit)
+                                            {
+                                                // 타겟 선정 페이지로 갈 필요가 없어서 액션도 여기서 설정해줘야 함.
+                                                battle.SetTargetMonster(battle.GetAliveMonsterList());
+                                                Battle.PlayerAction = () =>
+                                                {
+                                                    battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue()));
+                                                    player.MP -= selectedSKill.GetValue().Mana;
+                                                };
 
+                                                ExecuteTurnBySelectDone();
+                                                break;
+                                            }
                                             mode.SetValue("CHOOSE_TARGET");
                                             break;
                                         
@@ -561,26 +603,49 @@ public class Page
                                             if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
                                             if ((bool)battle.GetMonsterIsDead(context.Selection - 1)) { context.Error(); break; } // 죽은 몬스터를 선택한 경우
 
-                                            // 대상 지정, 플레이어 행동 결정 완료
-                                            battle.SetTargetMonster([battle.MonsterList[context.Selection - 1]]);
                                             
-                                            
-                                            if (selectedSKill.GetValue() == null) { Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerAttack((target as Monster)!)); }
+                                            Monster selectedMonster = battle.MonsterList[context.Selection - 1];
+
+                                            // 다중 공격
+                                            if (selectedSKill.GetValue().Name == "이단 배기")
+                                            {
+                                                if (battle.Target == null)
+                                                {
+                                                    battle.Target = new List<Actor>();
+                                                }
+                                                if (battle.Target.Contains(selectedMonster))
+                                                {
+                                                    context.Error("이미 선택한 대상입니다.");
+                                                    break;
+                                                }
+                                                battle.Target.Add(battle.MonsterList[context.Selection - 1]);
+
+                                                if (battle.Target.Count < 2)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            // 단일 공격
                                             else
                                             {
-                                                Battle.PlayerAction = () =>
+                                                // 대상 지정, 플레이어 행동 결정 완료
+                                                battle.SetTargetMonster([selectedMonster]);
+                                            }
+                                            
+                                            if (selectedSKill.GetValue() == null)
+                                            {
+                                                Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerAttack((target as Monster)!));
+                                            }
+                                            else {
+                                                Battle.PlayerAction = () => 
                                                 {
-                                                    battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue()));
                                                     // 사용된 마나 감소시키기
+                                                    battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue()));
                                                     player.MP -= selectedSKill.GetValue().Mana;
                                                 };
                                             }
 
-                                            // 다음 턴 진행
-                                            mode.SetValue("SELECT_DONE");
-                                            isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
-                                            battle.TurnStart();
-                                            cycle.SetValue(prev => prev + 1);
+                                            ExecuteTurnBySelectDone();
                                             break;
                                       
                                         case "USING_ITEM":
@@ -595,11 +660,7 @@ public class Page
                                                 player.Inventory.Remove(selectedItem.GetValue());
                                             };
                                             
-                                            // 다음 턴 진행
-                                            mode.SetValue("SELECT_DONE");
-                                            isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
-                                            battle.TurnStart();
-                                            cycle.SetValue(prev => prev + 1);
+                                            ExecuteTurnBySelectDone();
                                             break;
                                         
                                         case "SELECT_DONE":
@@ -611,12 +672,13 @@ public class Page
                                                 // clear
                                                 selectedItem.SetValue((ConsumItem?) null);
                                                 selectedSKill.SetValue((Skill?) null);
+                                                battle.Target.Clear();
                                                 // Battle.PlayerAction = () => { };
 
                                                 // 사이클이 끝난 경우, 죽은 몬스터를 통해 사이클 다시 체크(죽은 몬스터 발생 시 최대 사이클 변화되도록 관리)
                                                 if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); break; }
                                                
-                                                // 진행 중인 경우
+                                                // 진행 중인 경우 계속 진행
                                                 isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
                                                 if (isPlayerTurn.GetValue() == false)
                                                 {
@@ -634,6 +696,7 @@ public class Page
                                         
                                         if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); break; }
                                         
+                                        // 다음 턴도 몬스터일 경우 다음 턴 진행
                                         isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
                                         if (isPlayerTurn.GetValue() == false || mode.GetValue() == "SELECT_DONE")
                                         {
@@ -690,12 +753,13 @@ public class Page
                 {   
                     Player player = ObjectContext.Instance.Player;
                     Smith smith = ObjectContext.Instance.Smith; 
-                    smith.SetPlayerEquipItemList();
                     var equipments = smith.PlayerEquipItemList;
 
                     var mode = context.States.Get<string>("MODE").Init("VIEW");
                     var result = context.States.Get<ESmithResult>("SMITH_RESULT").Init(ESmithResult.None);
 
+                    context.Mount = () => smith.SetPlayerEquipItemList();
+                    
                     context.Content = () =>
                     {
                         Console.WriteLine("강화소\n무기를 강화하실 수 있습니다.\n");
