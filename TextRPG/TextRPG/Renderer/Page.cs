@@ -250,7 +250,7 @@ public class Page
                                         for (int i = 0; i < equipItems.Count; i++)
                                         {
                                             Item item = (Item)equipItems[i];
-                                            bool isExistItem = inventory.Contains(item!);
+                                            bool isExistItem = shop.CheckPlayerHave(item!);
                                             Logger.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {(isExistItem? "구매 완료" : item.Price +"G")}", isExistItem ? ConsoleColor.DarkCyan: ConsoleColor.Gray);
                                         }
                                         
