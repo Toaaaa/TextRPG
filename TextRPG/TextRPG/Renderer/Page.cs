@@ -629,7 +629,8 @@ public class Page
                                                 }
                                                 battle.Target.Add(battle.MonsterList[context.Selection - 1]);
 
-                                                if (battle.Target.Count < 2)
+                                                // 스킬은 2번 선택이나, 대상이 1명 남았을 경우 체크
+                                                if (battle.GetAliveMonsterList().Count > 2 && battle.Target.Count < 2)
                                                 {
                                                     break;
                                                 }
@@ -704,7 +705,8 @@ public class Page
                                 case false:
                                     {
                                         if(context.Selection != 0) { context.Error(); return; }
-                                        if (battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
+                                        if(battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
+                                        if(player.HP <= 0) { _router.Navigate(PageType.REWARD_PAGE); }
                                         
                                         if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); break; }
                                         
@@ -727,6 +729,7 @@ public class Page
                 {
                     Player player = ObjectContext.Instance.Player;
                     Battle battle = ObjectContext.Instance.Battle;
+                    bool isDefeat = player.HP <= 0;
                     
                     // rewards
                     var experience = battle.GetTotalExp();
@@ -734,6 +737,12 @@ public class Page
                     
                     context.Content = () =>
                     {
+                        if (isDefeat)
+                        {
+                            Console.WriteLine("[게임 오버]\n패배했습니다.\n\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                            return;
+                        }
+                        
                         Console.WriteLine(
                             $"Battle!! - Result\n\n" +
                             $"Victory\n\n" +
