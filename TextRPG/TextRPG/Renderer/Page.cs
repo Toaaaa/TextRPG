@@ -124,7 +124,8 @@ public class Page
                                 $"이름 : {player.Name}\n" +
                                 $"공격력 : {player.TotalATK}\n" +
                                 $"방어력 : {player.TotalDEF}\n" +
-                                $"체 력 : {player.MaxHP}\n" +
+                                $"체 력 : {player.HP}/{player.MaxHP}\n" +
+                                $"마 력 : {player.MP}/{player.MaxMP}\n" +
                                 $"Gold : {player.Gold} G\n\n" +
                                 $"0. 나가기\n\n" +
                                 $"원하시는 행동을 입력해주세요. >>\n");
@@ -542,9 +543,11 @@ public class Page
                                         
                                         case "SELECT_SKILL":
                                             if(context.Selection == 0) { mode.SetValue("WAITING"); return; }                                           
-                                            if (context.Selection > skills.Count() + 1) { context.Error(); return; }
+                                            if (context.Selection > skills.Count()) { context.Error(); return; }
                                             
                                             Skill currentSkill = skills.ElementAt(context.Selection - 1).Value;
+                                            
+                                            if(currentSkill.Mana > player.MP) { context.Error("마나가 부족합니다."); return; }
                                             selectedSKill.SetValue(currentSkill);
 
                                             mode.SetValue("CHOOSE_TARGET");
