@@ -188,7 +188,7 @@ public class Page
                         
                             if(item.IsEquip) Console.Write($"[E] ");
                             if(mode.GetValue() == "EQUIPMENT") Console.Write($"{i + 1}. ");
-                            Console.WriteLine($"{item.Name} | {item.Explain} | {item.Price}G");
+                            Console.WriteLine($"{item.Name} | {item.Explain} | +{item.Stat}");
                         }
                         Console.ResetColor();
 
@@ -469,18 +469,17 @@ public class Page
                         Battle battle = ObjectContext.Instance.Battle;
 
                         var mode = states.Get<string>("MODE").Init("WAITING");
-                        var turn = states.Get<bool?>("TURN").Init(null);
-                        var isEnd = states.Get<bool?>("END").Init(false);
+                        var isPlayerTurn = states.Get<bool?>("TURN").Init(null);
                         var cycle = states.Get<int?>("CYCLE").Init(0);
                         
                         context.Content = () =>
                         {
                             // if (turn.GetValue() == null) turn.SetValue(battle.GetIsPlayerTurn());
-                            if (turn.GetValue() == null) turn.SetValue(true);
+                            if (isPlayerTurn.GetValue() == null) isPlayerTurn.SetValue(true);
 
                             Logger.WriteLine($"Battle!!\n", ConsoleColor.Yellow);
                             
-                            switch (turn.GetValue())
+                            switch (isPlayerTurn.GetValue())
                             {
                                 case true:
                                     switch (mode.GetValue())
@@ -513,13 +512,14 @@ public class Page
 
                                                 break;
                                             }
-                                        case "SELECT_END":
+                                        case "SELECT_DONE":
                                             {
                                                 Monster monster = battle.TargetMonster;
                                                 Console.WriteLine(
                                                     $"{player.Name} 의 공격!\n" +
                                                     $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                                    $"Lv.{monster.Level} {monster.Name}\nHP {monster.MaxHP} -> {monster.HP}\n\n" +
+                                                    // 체력이 0 일때 값이 달라짐
+                                                    $"Lv.{monster.Level} {monster.Name}\nHP {monster.HP + battle.LastDamage} -> {monster.HP}\n\n" +
                                                     $"0. 다음");
                                             }
                                             break;
@@ -531,7 +531,7 @@ public class Page
                                         Console.WriteLine(
                                             $"{monster.Name} 의 공격!\n" +
                                             $"{player.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                            $"Lv.{player.Level} {player.Name}\nHP {player.MaxHP} -> {player.HP}\n\n" +
+                                            $"Lv.{player.Level} {player.Name}\nHP {player.HP + battle.LastDamage} -> {player.HP}\n\n" +
                                             $"0. 다음");
                                     }
                                     break;
@@ -541,7 +541,7 @@ public class Page
                         context.Choice = () =>
                         {
                             // 배틀 종료 확인을 최상단에서 체크
-                            switch (turn.GetValue())
+                            switch (isPlayerTurn.GetValue())
                             {
                                 case true:
                                     switch (mode.GetValue())
@@ -563,66 +563,70 @@ public class Page
                                                 }
                                                 // 대상 지정, 플레이어 행동 결정 완료
                                                 battle.SetTargetMonster(context.Selection - 1);
-                                                mode.SetValue("SELECT_END");
+                                                mode.SetValue("SELECT_DONE");
                                                 
-                                                turn.SetValue(battle.GetIsPlayerTurn());
+                                                isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
                                                 battle.TurnStart();
-                                                cycle.SetValue(prev => prev + 1);
+                                                // cycle.SetValue(prev => prev + 1);
+                                                
                                                 break;
                                             }
-                                        case "SELECT_END":
+                                        case "SELECT_DONE":
                                             {
                                                 if(context.Selection != 0) { context.Error(); return; }
-                                                
-                                                bool isBattleEnd = battle.TurnEnd(); 
-                                                if (isBattleEnd) { _router.Navigate(PageType.REWARD_PAGE); }
+                                                if (battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
                                                 mode.SetValue("WAITING");
                                                 
-                                             
+                                                // 사이클이 끝난 경우, 죽은 몬스터를 통해 사이클 다시 체크(죽은 몬스터 발생 시 최대 사이클 변화되도록 관리)
                                                 if (cycle.GetValue() == battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1)
                                                 {
+                                                    // 현재 남은 몬스터를 기준으로 queue 재할당
                                                     List<Actor> currentActors = new List<Actor>() {};
                                                     currentActors.AddRange(battle.MonsterList!.FindAll(monster => !monster.IsDead));
                                                     currentActors.Add(player);
-                                                    
                                                     battle.TurnQueue = battle.GetTurnQueue(currentActors);
-                                                    turn.SetValue(battle.GetIsPlayerTurn());
+                                                    
+                                                    // 만일 사이클이 끝난 뒤 다시 선택 화면을 우선 처리하고 싶다면 분리 종료
+                                                    isPlayerTurn.SetValue(true);
                                                     cycle.SetValue(0);
                                                     return;
                                                 }
                                                
-                                                turn.SetValue(battle.GetIsPlayerTurn());
-                                                battle.TurnStart();
-                                                cycle.SetValue(prev => prev + 1);
+                                                isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
+                                                if (isPlayerTurn.GetValue() == false)
+                                                {
+                                                    battle.TurnStart();
+                                                    cycle.SetValue(prev => prev + 1);
+                                                }
                                                 
                                                 break;
                                             }
                                     }
                                     break;
-                                // queue가 1개 남았을 때 턴 확인 시 오류 발생
                                 case false:
                                     {
                                         if(context.Selection != 0) { context.Error(); return; }
-                                        bool isBattleEnd = battle.TurnEnd();
-                                        if (isBattleEnd) { _router.Navigate(PageType.REWARD_PAGE); }
+                                        if (battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
                                         
                                         if (cycle.GetValue() == battle.MonsterList!.FindAll(monster => !monster.IsDead).Count + 1)
                                         {
                                             List<Actor> currentActors = new List<Actor>() {};
                                             currentActors.AddRange(battle.MonsterList!.FindAll(monster => !monster.IsDead));
                                             currentActors.Add(player);
-                                            
                                             battle.TurnQueue = battle.GetTurnQueue(currentActors);
-                                            turn.SetValue(battle.GetIsPlayerTurn());
-                                            // mode.SetValue("WAITING");
+                                            
+                                            // 만일 사이클이 끝난 뒤 다시 선택 화면을 우선 처리하고 싶다면 분리 종료
+                                            isPlayerTurn.SetValue(true);
                                             cycle.SetValue(0);
                                             return;
                                         }
                                         
-                                        turn.SetValue(battle.GetIsPlayerTurn());
-                                        battle.TurnStart();
-                                        cycle.SetValue(prev => prev + 1);
-
+                                        isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
+                                        if (isPlayerTurn.GetValue() == false || mode.GetValue() == "SELECT_DONE")
+                                        {
+                                            battle.TurnStart();
+                                            cycle.SetValue(prev => prev + 1);
+                                        }
                                     }
                                     break;
                             }
@@ -634,21 +638,26 @@ public class Page
                 new Renderer((context, states)  =>
                 {
                     Player player = ObjectContext.Instance.Player;
-                    var rewrads = ObjectContext.Instance.Battle.RewardItems;
+                    Battle battle = ObjectContext.Instance.Battle;
+                    
+                    // rewards
+                    var items = battle.RewardItems;
+                    var experience = battle.GetTotalExp();
+                    var gold = battle.GetTotalGold(); 
                     
                     context.Content = () =>
                     {
                         Console.WriteLine(
                             $"Battle!! - Result\n\n" +
                             $"Victory\n\n" +
-                            $"던전에서 몬스터 3마리를 잡았습니다.\n\n" +
+                            $"던전에서 몬스터 {battle.MonsterList.Count}마리를 잡았습니다.\n\n" +
                             $"[캐릭터 정보]\n" +
-                            $"Lv.1 Chad -> Lv2. " +
+                            $"Lv.1 Chad -> Lv. {player.Level}" +
                             $"Chad\n" +
                             $"HP 100 -> 74\n" +
-                            $"exp 5 -> 13\n\n" +
+                            $"exp {player.EXP} -> {player.EXP + experience}\n\n" +
                             $"[획득 아이템]\n" +
-                            $"500 Gold\n" +
+                            $"{gold} Gold\n" +
                             $"포션 - 1\n" +
                             $"낡은검 - 1\n\n" +
                             $"0. 다음");
@@ -656,6 +665,8 @@ public class Page
 
                     context.Choice = () =>
                     {
+                        if(context.Selection != 0) { context.Error(); return; }
+                        
                         _router.PopState(3);
                     };
                 })
