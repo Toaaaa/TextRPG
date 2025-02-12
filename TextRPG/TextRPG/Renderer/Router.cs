@@ -16,22 +16,22 @@ public class Router
         if (!_page.Scenes.ContainsKey(pageId)) return;
         Renderer currentScene = _page.Scenes[pageId];
         currentScene.LazyLoad();
-        currentScene.Mount?.Invoke();
         currentScene.States.Clear();
+        currentScene.Mount?.Invoke();
         currentScene.Render();
     }
     
-    public void Navigate<T>(dynamic pageId, T locationState)
+    public void Navigate(dynamic pageId, object locationState)
     {
-        _history.Push(pageId);
         // err: 페이지가 없는 경우
-        if (!_page.Scenes.ContainsKey(pageId)) return;
         // fix: SetRouter 호출과 동작엔 문제 없지만 보장하기 어려움.
+        _history.Push(pageId);
+        if (!_page.Scenes.ContainsKey(pageId)) return;
         Renderer currentScene = _page.Scenes[pageId];
-        // currentScene.States.SetLocationState<T>(locationState);
         currentScene.LazyLoad();
         currentScene.States.Clear();
-        //feat: 페이지 접근 시 한번만 실행
+        currentScene.States.SetParams(locationState);
+        currentScene.Mount?.Invoke();
         currentScene.Render();
     }
 
