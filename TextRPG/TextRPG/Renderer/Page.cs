@@ -17,7 +17,7 @@ public enum PageType
     SHOP_TRADE_PAGE,
     DUNGEON_PAGE,
     BATTLE_PAGE,
-    REWARD_PAGE,
+    BATTLE_RESULT_PAGE,
     SMITHY_PAGE
 }
 
@@ -121,8 +121,8 @@ public class Page
                                 $"Lv. {player.Level}\n" +
                                 $"Chad ( {player.Class} )\n" +
                                 $"이름 : {player.Name}\n" +
-                                $"공격력 : {player.TotalATK}\n" +
-                                $"방어력 : {player.TotalDEF}\n" +
+                                $"공격력 : {player.TotalATK - player.AddAttack} [+{player.AddAttack}]\n" +
+                                $"방어력 : {player.TotalDEF - player.AddDefense} [+{player.AddDefense}]\n" +
                                 $"체 력 : {player.HP}/{player.MaxHP}\n" +
                                 $"마 력 : {player.MP}/{player.MaxMP}\n" +
                                 $"Gold : {player.Gold} G\n\n" +
@@ -432,7 +432,7 @@ public class Page
                             if(mode.GetValue() == "WAITING") Console.WriteLine("0. 나가기\n1. 공격\n2. 스킬\n3. 아이템");
                             if(mode.GetValue() == "CHOOSE_TARGET") Console.WriteLine("0. 취소");
                         };
-                        
+                        // [기본 선택]
                         context.Choice += () =>
                         {
                             if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "WAITING")) return;
@@ -444,7 +444,7 @@ public class Page
 
                             mode.SetValue(modes[context.Selection - 1]);
                         };
-                        
+                        // [대상 선택]
                         context.Choice += () =>
                         {
                             if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "CHOOSE_TARGET")) return;
@@ -515,7 +515,6 @@ public class Page
                             mode.SetValue("CHOOSE_TARGET");
                         };
                         
-
                         // [아이템 선택 화면]
                         context.Content += () =>
                         {
@@ -556,8 +555,7 @@ public class Page
                             // 아이템 사용인 경우
                             if (selectedItem.GetValue() != null)
                             {
-                                Console.WriteLine(
-                                    $"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" 
+                                Console.WriteLine($"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" 
                                     + $"HP {battle.LastHp} -> {player.HP}\n\n" + $"HP {battle.LastMp} -> {player.MP}\n\n"
                                     + $"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                 return;
@@ -582,10 +580,10 @@ public class Page
                         {
                             if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "SELECT_DONE")) return;
                             if(context.Selection != 0) { context.Error(); return; }
-                            if (battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
-                                                
-                            mode.SetValue("WAITING");
+                            if (battle.CheckBattleEnd()) { _router.Navigate(PageType.BATTLE_RESULT_PAGE); }
+                            
                             // clear
+                            mode.SetValue("WAITING");
                             selectedItem.SetValue((ConsumItem?) null);
                             selectedSKill.SetValue((Skill?) null);
                             battle.Target.Clear();
@@ -624,9 +622,8 @@ public class Page
                         {
                             if(isPlayerTurn.GetValue() == true) return;
                             if(context.Selection != 0) { context.Error(); return; }
-                            if(battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
-                            if(player.HP <= 0) { _router.Navigate(PageType.REWARD_PAGE); }
-                                        
+                            if(battle.CheckBattleEnd()) { _router.Navigate(PageType.BATTLE_RESULT_PAGE); }
+                            if(player.HP <= 0) { _router.Navigate(PageType.BATTLE_RESULT_PAGE); }
                             if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); return; }
                                         
                             // 다음 턴도 몬스터일 경우 다음 턴 진행
@@ -640,28 +637,40 @@ public class Page
                     })
             },
             {
-                PageType.REWARD_PAGE,
+                PageType.BATTLE_RESULT_PAGE,
                 new Renderer((context, states)  =>
                 {
                     Player player = ObjectContext.Instance.Player;
                     Battle battle = ObjectContext.Instance.Battle;
                     
                     bool isVictory = player.HP > 0;
-                    var experience = battle.GetTotalExp();
-                    var gold = battle.GetTotalGold();
-                    
+
+                    // [승리화면] - 보상 등록
+                    context.Mount = () =>
+                    {
+                        if (!isVictory) return;
+                        battle.TurnEnd();
+                        battle.EndBattle();
+                    };
                     // [승리 화면]
                     context.Content = () =>
                     {
                         if (!isVictory) return;  
                         
+                        // 레벨업 정보, 처음 체력 정보 알기 필요
                         Console.WriteLine(
                             $"Battle!! - Result\n\n" + $"Victory\n\n" +
                             $"던전에서 몬스터 {battle.MonsterList.Count}마리를 잡았습니다.\n\n" +
                             $"[캐릭터 정보]\n" +
-                            $"Lv.1 Chad -> Lv. {player.Level}" + $"Chad\n" + $"HP 100 -> 74\n" + $"exp {player.EXP} -> {player.EXP + experience}\n\n" +
+                            $"Lv.1 -> Lv. {player.Level}\n"
+                            + $"HP 100 -> {player.HP}\n" +
+                            $"[획득 경험치]\n{battle.GetTotalExp()}\n\n" +
                             $"[획득 아이템]\n" +
-                            $"{gold} Gold\n" + $"포션 - 1\n" + $"낡은검 - 1\n\n" + $"0. 다음");
+                            $"{battle.GetTotalGold()} Gold\n");
+                        
+                        battle.RewardItems?.ForEach(Console.WriteLine);
+                        
+                        Console.WriteLine($"0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                     };
                     
                     // [패배 화면]
@@ -675,7 +684,6 @@ public class Page
                     context.Choice += () =>
                     {
                         if(context.Selection != 0) { context.Error(); return; }
-                        if(isVictory) battle.EndBattle();
                         _router.PopState(3);
                     };
                 })
