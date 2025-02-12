@@ -19,7 +19,10 @@ public class Monster : Actor
     public List<string> DroppedItems { get; private set; } // ✅ 몬스터가 생성될 때 드랍 아이템 결정
 
     // ✅ 몬스터의 이전 HP 
-    public int BeforeHP { get; set; } 
+    public int BeforeHP { get; set; }
+
+    //처치 시 골드
+    public int GoldReward{ get; set; }
 
 
     // 사망 여부
@@ -30,7 +33,7 @@ public class Monster : Actor
     }
    
     // 몬스터 생성
-    public Monster(string name, int level, int maxhp, int atk, int def, int spd, int exp, Dictionary<int, int> spawnRates, Dictionary<string, int> dropTable, int crit = 5)
+    public Monster(string name, int level, int maxhp, int atk, int def, int spd, int exp, int goldReward, Dictionary<int, int> spawnRates, Dictionary<string, int> dropTable, int crit = 5)
     {
         Name = name;
         Level = level;
@@ -41,6 +44,7 @@ public class Monster : Actor
         DEF = def;
         SPD = spd;
         EXP = exp;
+        GoldReward = goldReward;
         SpawnRates = spawnRates;
         DropTable = dropTable;
         CRIT = crit;
@@ -72,10 +76,10 @@ public class Monster : Actor
     // ✅ 몬스터 프리셋 (등장 확률 포함)
     public static List<Monster> MonsterPresets = new List<Monster>
     {
-        new Monster("달팽이", 1, 10, 2, 0, 1, 1, new Dictionary<int, int> { {1, 50}, {2, 40}, {3, 0},  {4, 0}  },new Dictionary<string, int> { {"포션", 30}, {"강화석", 30},}, 5), 
-        new Monster("고블린", 3, 25, 5, 0, 1, 2, new Dictionary<int, int> { {1, 50}, {2, 40}, {3, 50}, {4, 0}  }, new Dictionary<string, int> { {"포션", 40}, {"강화석", 35},}, 5) ,
-        new Monster("오크", 5, 50, 2, 2, 3, 5, new Dictionary<int, int> { {1, 0},  {2, 20}, {3, 50}, {4, 60} },  new Dictionary<string, int> { {"포션", 50}, {"하이포션", 20}, {"강화석", 40},}, 5 ),
-        new Monster("골렘", 10, 200, 10, 5, 2, 8, new Dictionary<int, int> { {1, 0},  {2, 0},  {3, 0},  {4, 40} }, new Dictionary<string, int> { {"하이포션", 35}, {"강화석", 50},},5 ),
+        new Monster("달팽이", 1, 10, 2, 0, 1, 1, 100, new Dictionary<int, int> { {1, 50}, {2, 40}, {3, 0},  {4, 0}  },new Dictionary<string, int> { {"포션", 30}, {"강화석", 30},}, 5), 
+        new Monster("고블린", 3, 25, 5, 0, 1, 2, 200, new Dictionary<int, int> { {1, 50}, {2, 40}, {3, 50}, {4, 0}  }, new Dictionary<string, int> { {"포션", 40}, {"강화석", 35},}, 5) ,
+        new Monster("오크", 5, 50, 2, 2, 3, 5, 300, new Dictionary<int, int> { {1, 0},  {2, 20}, {3, 50}, {4, 60} },  new Dictionary<string, int> { {"포션", 50}, {"하이포션", 20}, {"강화석", 40},}, 5 ),
+        new Monster("골렘", 10, 200, 10, 5, 2, 8, 500, new Dictionary<int, int> { {1, 0},  {2, 0},  {3, 0},  {4, 40} }, new Dictionary<string, int> { {"하이포션", 35}, {"강화석", 50},},5 ),
     };
 
     
@@ -122,7 +126,7 @@ public class Monster : Actor
                 if (roll <= cumulativeChance)
                 {
                     dungeonMonsters.Add(new Monster(entry.Key.Name, entry.Key.Level, entry.Key.HP, 
-                                                    entry.Key.TotalATK, entry.Key.DEF, entry.Key.SPD, entry.Key.EXP,
+                                                    entry.Key.TotalATK, entry.Key.DEF, entry.Key.SPD, entry.Key.EXP, entry.Key.GoldReward,
                                                     entry.Key.SpawnRates, entry.Key.DropTable, entry.Key.CRIT)); // 같은 몬스터라도 새 객체 생성
                     break;
                 }
