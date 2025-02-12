@@ -213,7 +213,7 @@ public class Battle
     }
     public void EndBattle()//전투 종료시 호출, 보상 지급.
     {
-        ObjectContext.Instance.Player.EXP += TotalExp;
+        ObjectContext.Instance.Player.GetExp(TotalExp);
         ObjectContext.Instance.Player.Gold += TotalGold;
         if(RewardItems != null)
         {
