@@ -154,7 +154,7 @@ public class Battle
     {
         TotalExp = 0;
         TotalGold = 0;
-        RewardItems?.Clear();
+        RewardItems = new List<string>();
 
         actors.Clear();
         TurnQueue.Clear();
