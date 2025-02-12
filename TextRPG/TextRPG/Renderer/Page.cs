@@ -315,7 +315,7 @@ public class Page
                         for (int i = 0; i < inventory.Count; i++)
                         {
                             Item item = inventory[i];
-                            Console.WriteLine($"{i + 1}. {item.Name} | {item.Explain} | {item.Price}G");
+                            Console.WriteLine($"{i + 1}. {item.Name} | {item.Explain} | {Math.Round(item.Price * 0.85)}G");
                         }
                                     
                         Console.WriteLine("\n0. 나가기\n\n" + "원하시는 행동을 입력해주세요. >>");
