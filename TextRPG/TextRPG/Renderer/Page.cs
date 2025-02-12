@@ -402,6 +402,7 @@ public class Page
                         // do: 한번만 호출 필요(스킬 클래스에 스태틱으로)
                         Dictionary<string, Skill> skills = Skill.LoadSkillDictionary(Path.Combine(Path.GetFullPath(@"../../../Objects/SkillList.json")));
 
+                        
                         // [선택 화면]
                         context.Content += () =>
                         {
@@ -431,11 +432,54 @@ public class Page
                             if(mode.GetValue() == "WAITING") Console.WriteLine("0. 나가기\n1. 공격\n2. 스킬\n3. 아이템");
                             if(mode.GetValue() == "CHOOSE_TARGET") Console.WriteLine("0. 취소");
                         };
+                        
+                        context.Choice += () =>
+                        {
+                            if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "WAITING")) return;
+                            
+                            string[] modes = ["CHOOSE_TARGET", "SELECT_SKILL", "USING_ITEM"];
+
+                            if(context.Selection == 0) { _router.PopState();; return; }
+                            if(context.Selection > modes.Length) { context.Error(); return; }
+
+                            mode.SetValue(modes[context.Selection - 1]);
+                        };
+                        
+                        context.Choice += () =>
+                        {
+                            if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "CHOOSE_TARGET")) return;
+
+                            if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
+                            if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
+                            if ((bool)battle.GetMonsterIsDead(context.Selection - 1)) { context.Error(); return; } // 죽은 몬스터를 선택한 경우
+                            
+                            Monster selectedMonster = battle.MonsterList[context.Selection - 1];
+
+                            // fix : 다중 공격 - nullable 체크 
+                            if (selectedSKill.GetValue()?.Name == "이단 배기")
+                            {
+                                if (battle.Target == null) { battle.Target = new List<Actor>(); }
+                                if (battle.Target.Contains(selectedMonster)) { context.Error("이미 선택한 대상입니다."); return; }
+                                battle.Target.Add(battle.MonsterList[context.Selection - 1]);
+                                // 스킬은 2번 선택이나, 대상이 1명 남았을 경우 체크
+                                if (battle.GetAliveMonsterList().Count() >= 2 && battle.Target.Count < 2) { return; }
+                            }
+                            // 단일 공격// 대상 지정, 플레이어 행동 결정 완료
+                            else { battle.SetTargetMonster([selectedMonster]); }
+                            // 일반 공격
+                            if (selectedSKill.GetValue() == null) { Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerAttack((target as Monster)!)); }
+                            // 스킬 공격 // 사용된 마나 감소시키기
+                            else { Battle.PlayerAction = () => { battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue())); player.MP -= selectedSKill.GetValue().Mana; }; }
+
+                            ExecuteTurnBySelectDone();
+                        };
+
 
                         // [스킬 선택 화면]
                         context.Content += () =>
                         {
                             if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "SELECT_SKILL")) return;
+                            
                             for (int index = 0; index < skills.Count(); index++)
                             {
                                 Skill currentSkill = skills.ElementAt(index).Value; 
@@ -444,6 +488,33 @@ public class Page
                             }
                             Console.WriteLine("\n0. 취소");
                         };
+                        context.Choice += () =>
+                        {
+                            if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "SELECT_SKILL")) return;
+                            if(context.Selection == 0) { mode.SetValue("WAITING"); return; }                                           
+                            if (context.Selection > skills.Count()) { context.Error(); return; }
+                                            
+                            Skill currentSkill = skills.ElementAt(context.Selection - 1).Value;
+                            if(currentSkill.Mana > player.MP) { context.Error("마나가 부족합니다."); return; }
+                            selectedSKill.SetValue(currentSkill);
+                                            
+                            // 전체 공격일 경우, 선택을 생략한다.
+                            if (currentSkill.MultiHit)
+                            {
+                                // 타겟 선정 페이지로 갈 필요가 없어서 액션도 여기서 설정해줘야 함.
+                                battle.SetTargetMonster(battle.GetAliveMonsterList());
+                                Battle.PlayerAction = () =>
+                                {
+                                    battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue()));
+                                    player.MP -= selectedSKill.GetValue().Mana;
+                                };
+
+                                ExecuteTurnBySelectDone();
+                                return;
+                            }
+                            mode.SetValue("CHOOSE_TARGET");
+                        };
+                        
 
                         // [아이템 선택 화면]
                         context.Content += () =>
@@ -458,6 +529,22 @@ public class Page
                                 Console.WriteLine($"{item.Name} | {item.Explain}");
                             }
                             Console.WriteLine("\n0. 취소");
+                        };
+                        context.Choice += () =>
+                        {
+                            if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "USING_ITEM")) return;
+                            if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
+                            if (context.Selection > consumItems.Count() + 1) { context.Error(); return; }
+                                            
+                            selectedItem.SetValue(consumItems.ElementAt(context.Selection - 1));
+                            Battle.PlayerAction = () =>
+                            {
+                                selectedItem.GetValue().UseItem(player, EConsumItem.Potion);
+                                // 소모된 아이템 제거
+                                player.Inventory.Remove(selectedItem.GetValue());
+                            };
+                                            
+                            ExecuteTurnBySelectDone();
                         };
                         
                         
@@ -491,6 +578,31 @@ public class Page
                             
                             Console.WriteLine($"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                         };
+                        context.Choice += () =>
+                        {
+                            if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "SELECT_DONE")) return;
+                            if(context.Selection != 0) { context.Error(); return; }
+                            if (battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
+                                                
+                            mode.SetValue("WAITING");
+                            // clear
+                            selectedItem.SetValue((ConsumItem?) null);
+                            selectedSKill.SetValue((Skill?) null);
+                            battle.Target.Clear();
+                            // Battle.PlayerAction = () => { };
+
+                            // 사이클이 끝난 경우, 죽은 몬스터를 통해 사이클 다시 체크(죽은 몬스터 발생 시 최대 사이클 변화되도록 관리)
+                            if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); return; }
+                                               
+                            // 진행 중인 경우 계속 진행
+                            isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
+                            // fix: 상태 저장 방식의 변경으로 인해 상태값으로 바로 인식 불가능 
+                            if (battle.GetIsPlayerTurn() == false)
+                            {
+                                battle.TurnStart();
+                                cycle.SetValue(prev => prev + 1);
+                            }
+                        };
                             
                         
                         // [적군의 턴]
@@ -508,164 +620,21 @@ public class Page
                             
                             Console.WriteLine($"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                         };
-                        
-                        
-                        context.Choice = () =>
+                        context.Choice += () =>
                         {
-                            switch (isPlayerTurn.GetValue())
+                            if(isPlayerTurn.GetValue() == true) return;
+                            if(context.Selection != 0) { context.Error(); return; }
+                            if(battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
+                            if(player.HP <= 0) { _router.Navigate(PageType.REWARD_PAGE); }
+                                        
+                            if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); return; }
+                                        
+                            // 다음 턴도 몬스터일 경우 다음 턴 진행
+                            isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
+                            if (battle.GetIsPlayerTurn() == false || mode.GetValue() == "SELECT_DONE")
                             {
-                                case true:
-                                    switch (mode.GetValue())
-                                    {
-                                        case "WAITING":
-                                            string[] modes = ["CHOOSE_TARGET", "SELECT_SKILL", "USING_ITEM"];
-
-                                            if(context.Selection == 0) { _router.PopState();; return; }
-                                            if(context.Selection > modes.Length) { context.Error(); return; }
-
-                                            mode.SetValue(modes[context.Selection - 1]);
-                                            
-                                            break;
-                                        
-                                        case "SELECT_SKILL":
-                                            if(context.Selection == 0) { mode.SetValue("WAITING"); return; }                                           
-                                            if (context.Selection > skills.Count()) { context.Error(); return; }
-                                            
-                                            Skill currentSkill = skills.ElementAt(context.Selection - 1).Value;
-                                            
-                                            if(currentSkill.Mana > player.MP) { context.Error("마나가 부족합니다."); return; }
-                                            selectedSKill.SetValue(currentSkill);
-                                            
-                                            // 전체 공격일 경우, 선택을 생략한다.
-                                            if (currentSkill.MultiHit)
-                                            {
-                                                // 타겟 선정 페이지로 갈 필요가 없어서 액션도 여기서 설정해줘야 함.
-                                                battle.SetTargetMonster(battle.GetAliveMonsterList());
-                                                Battle.PlayerAction = () =>
-                                                {
-                                                    battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue()));
-                                                    player.MP -= selectedSKill.GetValue().Mana;
-                                                };
-
-                                                ExecuteTurnBySelectDone();
-                                                break;
-                                            }
-                                            mode.SetValue("CHOOSE_TARGET");
-                                            break;
-                                        
-                                        case "CHOOSE_TARGET":
-
-                                            if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
-                                            if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
-                                            if ((bool)battle.GetMonsterIsDead(context.Selection - 1)) { context.Error(); break; } // 죽은 몬스터를 선택한 경우
-                                            
-                                            Monster selectedMonster = battle.MonsterList[context.Selection - 1];
-
-                                            // fix : 다중 공격 - nullable 체크 
-                                            if (selectedSKill.GetValue()?.Name == "이단 배기")
-                                            {
-                                                if (battle.Target == null)
-                                                {
-                                                    battle.Target = new List<Actor>();
-                                                }
-                                                if (battle.Target.Contains(selectedMonster))
-                                                {
-                                                    context.Error("이미 선택한 대상입니다.");
-                                                    break;
-                                                }
-                                                battle.Target.Add(battle.MonsterList[context.Selection - 1]);
-
-                                                // 스킬은 2번 선택이나, 대상이 1명 남았을 경우 체크
-                                                if (battle.GetAliveMonsterList().Count() >= 2 && battle.Target.Count < 2)
-                                                {
-                                                    break;
-                                                }
-                                            }
-                                            // 단일 공격
-                                            else
-                                            {
-                                                // 대상 지정, 플레이어 행동 결정 완료
-                                                battle.SetTargetMonster([selectedMonster]);
-                                            }
-                                            
-                                            // 일반 공격
-                                            if (selectedSKill.GetValue() == null)
-                                            {
-                                                Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerAttack((target as Monster)!));
-                                            }
-                                            
-                                            // 스킬 공격
-                                            else {
-                                                Battle.PlayerAction = () => 
-                                                {
-                                                    // 사용된 마나 감소시키기
-                                                    battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue()));
-                                                    player.MP -= selectedSKill.GetValue().Mana;
-                                                };
-                                            }
-
-                                            ExecuteTurnBySelectDone();
-                                            break;
-                                      
-                                        case "USING_ITEM":
-                                            if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
-                                            if (context.Selection > consumItems.Count() + 1) { context.Error(); break; }
-                                            
-                                            selectedItem.SetValue(consumItems.ElementAt(context.Selection - 1));
-                                            Battle.PlayerAction = () =>
-                                            {
-                                                selectedItem.GetValue().UseItem(player, EConsumItem.Potion);
-                                                // 소모된 아이템 제거
-                                                player.Inventory.Remove(selectedItem.GetValue());
-                                            };
-                                            
-                                            ExecuteTurnBySelectDone();
-                                            break;
-                                        
-                                        case "SELECT_DONE":
-                                            {
-                                                if(context.Selection != 0) { context.Error(); return; }
-                                                if (battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
-                                                
-                                                mode.SetValue("WAITING");
-                                                // clear
-                                                selectedItem.SetValue((ConsumItem?) null);
-                                                selectedSKill.SetValue((Skill?) null);
-                                                battle.Target.Clear();
-                                                // Battle.PlayerAction = () => { };
-
-                                                // 사이클이 끝난 경우, 죽은 몬스터를 통해 사이클 다시 체크(죽은 몬스터 발생 시 최대 사이클 변화되도록 관리)
-                                                if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); break; }
-                                               
-                                                // 진행 중인 경우 계속 진행
-                                                isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
-                                                // fix: 상태 저장 방식의 변경으로 인해 상태값으로 바로 인식 불가능 
-                                                if (battle.GetIsPlayerTurn() == false)
-                                                {
-                                                    battle.TurnStart();
-                                                    cycle.SetValue(prev => prev + 1);
-                                                }
-                                                break;
-                                            }
-                                    }
-                                    break;
-                                case false:
-                                    {
-                                        if(context.Selection != 0) { context.Error(); return; }
-                                        if(battle.TurnEnd()) { _router.Navigate(PageType.REWARD_PAGE); }
-                                        if(player.HP <= 0) { _router.Navigate(PageType.REWARD_PAGE); }
-                                        
-                                        if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); break; }
-                                        
-                                        // 다음 턴도 몬스터일 경우 다음 턴 진행
-                                        isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
-                                        if (battle.GetIsPlayerTurn() == false || mode.GetValue() == "SELECT_DONE")
-                                        {
-                                            battle.TurnStart();
-                                            cycle.SetValue(prev => prev + 1);
-                                        }
-                                    }
-                                    break;
+                                battle.TurnStart();
+                                cycle.SetValue(prev => prev + 1);
                             }
                         };
                     })
