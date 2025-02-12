@@ -538,7 +538,7 @@ public class Page
                             selectedItem.SetValue(consumItems.ElementAt(context.Selection - 1));
                             Battle.PlayerAction = () =>
                             {
-                                selectedItem.GetValue().UseItem(player, EConsumItem.Potion);
+                                selectedItem.GetValue().UseItem(player);
                                 // 소모된 아이템 제거
                                 player.Inventory.Remove(selectedItem.GetValue());
                             };

@@ -44,11 +44,11 @@ namespace TextRPG.Objects.Items
         public int Num { get; set; } // 소모품 갯수
 
         //public
-        public void UseItem(Player _Player, EConsumItem _Category)
+        public void UseItem(Player _Player)
         {
             if (0 < Num)
             {
-                switch (_Category)
+                switch (Category)
                 {
                     case EConsumItem.Potion:
                         switch (Name)
