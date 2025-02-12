@@ -402,136 +402,116 @@ public class Page
                         // do: 한번만 호출 필요(스킬 클래스에 스태틱으로)
                         Dictionary<string, Skill> skills = Skill.LoadSkillDictionary(Path.Combine(Path.GetFullPath(@"../../../Objects/SkillList.json")));
 
-                            
-                        context.Content = () =>
+                        // [선택 화면]
+                        context.Content += () =>
                         {
+                            if (isPlayerTurn.GetValue() == false || mode.GetValue() == "SELECT_DONE") return;
 
                             Logger.WriteLine($"Battle!!\n", ConsoleColor.Yellow);
-                            
-                            switch (isPlayerTurn.GetValue())
+
+                            // show monster list
+                            for (int index = 0; index < dungeon.MonsterList.Count; index++)
                             {
-                                case true:
-                                    switch (mode.GetValue())
-                                    {
-                                        case "WAITING":
-                                        case "CHOOSE_TARGET":
-                                        case "SELECT_SKILL":
-                                        case "USING_ITEM":
-                                            {
-                                                // show monster list
-                                                for (int index = 0; index < dungeon.MonsterList.Count; index++)
-                                                {
-                                                    Monster monster = dungeon.MonsterList[index];
+                                Monster monster = dungeon.MonsterList[index];
+                                if (mode.GetValue() == "CHOOSE_TARGET")
+                                    Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
+                                if (battle.Target != null && battle.Target.Contains(monster))
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
 
-                                                    if (mode.GetValue() == "CHOOSE_TARGET") Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
-                                                    
-                                                    // 중복 선택 시, 이미 선택된 몬스터 표시
-                                                    if (battle.Target != null && battle.Target.Contains(monster))
-                                                        Console.ForegroundColor = ConsoleColor.Cyan;
+                                if (monster.IsDead) Console.ForegroundColor = ConsoleColor.DarkGray;
+                                Console.Write($"Lv.{monster.Level} {monster.Name} - ");
+                                Console.WriteLine(monster.IsDead ? "Dead" : $"HP {monster.HP}");
 
-                                                    // 죽은 몬스터는 아예 선택이 안되도록 처리해도 좋을 듯.
-                                                    if (monster.IsDead) Console.ForegroundColor = ConsoleColor.DarkGray;
-
-                                                    Console.Write($"Lv.{monster.Level} {monster.Name} - ");
-                                                    Console.WriteLine(monster.IsDead ? "Dead" : $"HP {monster.HP}");
-                                                    
-                                                    Console.ResetColor();
-                                                }
-
-                                                Console.WriteLine($"\n[내정보]\n" + $"Lv.{player.Level}  Chad ({player.Class}) \n" + $"HP {player.HP}/{player.MaxHP}\n");
-
-                                                switch (mode.GetValue())
-                                                {
-                                                    case "WAITING":
-                                                        Console.WriteLine("0. 나가기\n1. 공격\n2. 스킬\n3. 아이템");
-                                                        break;
-                                                    case "CHOOSE_TARGET":
-                                                        Console.WriteLine("0. 취소");
-                                                        break;
-                                                    case "SELECT_SKILL":
-                                                        for (int index = 0; index < skills.Count(); index++)
-                                                        {
-                                                            Skill currentSkill = skills.ElementAt(index).Value; 
-                                                            Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
-                                                            Console.WriteLine($"{currentSkill.Name} | {currentSkill.Explain} | {currentSkill.Mana}MP");
-                                                        }
-                                                        
-                                                        Console.WriteLine("\n0. 취소");
-                                                        break;
-                                                    
-                                                    case "USING_ITEM":
-                                                        IEnumerable<ConsumItem> items = player.Inventory.OfType<ConsumItem>();
-                                                        for (int index = 0; index < items.Count(); index++)
-                                                        {
-                                                            ConsumItem item = items.ElementAt(index);
-                                                            Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
-                                                            // 아이템 갯수 확인 필요
-                                                            Console.WriteLine($"{item.Name} | {item.Explain}");
-                                                        }
-                                                        Console.WriteLine("\n0. 취소");
-                                                        break;
-                                                }
-
-                                                break;
-                                            }
-                                        case "SELECT_DONE":
-                                                // 아이템 사용인 경우
-                                                if (selectedItem.GetValue() != null)
-                                                {
-                                                    Console.WriteLine(
-                                                        $"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" 
-                                                        + $"HP {battle.LastHp} -> {player.HP}\n\n" + $"HP {battle.LastMp} -> {player.MP}\n\n"
-                                                        + $"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
-                                                    break;
-                                                }
-
-                                                // 스킬 사용의 경우
-                                                if (selectedSKill.GetValue() != null)
-                                                {
-                                                    if(player.IsCritical()) Console.WriteLine("[치명타 공격!]");
-                                                    Console.WriteLine($"{player.Name}가 {selectedSKill.GetValue().Name} 스킬을 사용했습니다.\n");
-                                                    foreach (Monster monster in battle.Target)
-                                                    {
-                                                        // 체력이 0 일때 값이 달라짐
-                                                        Console.WriteLine(
-                                                            $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                                            $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.BeforeHP} -> {monster.HP}\n");
-                                                    }
-                                                    Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
-                                                    break;
-                                                }
- 
-                                                // 일반 공격
-                                                if(player.IsCritical()) Console.WriteLine("[치명타 공격!]");
-                                                
-                                                foreach (Monster monster in battle.Target)
-                                                {
-                                                    Console.WriteLine(
-                                                        $"{player.Name} 의 공격!\n" + $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                                        $"Lv.{monster.Level} {monster.Name}\n" + $"HP {monster.BeforeHP} -> {monster.HP}\n");
-                                                }
-                                                Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
-                                                
-                                            break;
-                                    }
-                                    break;
-                                case false:
-                                    {
-                                        Actor monster = battle.CurrentActor;
-                                        if(monster.IsCritical()) Console.WriteLine("[치명타 공격!]");
-                                        Console.WriteLine(
-                                            $"{monster.Name} 의 공격!\n" + $"{player.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
-                                            $"Lv.{player.Level} {player.Name}\nHP {player.HP + battle.LastDamage} -> {player.HP}\n");
-                                    }
-                                    Console.WriteLine($"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
-
-                                    break;
+                                Console.ResetColor();
                             }
+
+                            // show player info
+                            Console.WriteLine($"\n[내정보]\n" + $"Lv.{player.Level}  Chad ({player.Class}) \n" + $"HP {player.HP}/{player.MaxHP}\n");
+                            
+                            if(mode.GetValue() == "WAITING") Console.WriteLine("0. 나가기\n1. 공격\n2. 스킬\n3. 아이템");
+                            if(mode.GetValue() == "CHOOSE_TARGET") Console.WriteLine("0. 취소");
                         };
 
+                        // [스킬 선택 화면]
+                        context.Content += () =>
+                        {
+                            if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "SELECT_SKILL")) return;
+                            for (int index = 0; index < skills.Count(); index++)
+                            {
+                                Skill currentSkill = skills.ElementAt(index).Value; 
+                                Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
+                                Console.WriteLine($"{currentSkill.Name} | {currentSkill.Explain} | {currentSkill.Mana}MP");
+                            }
+                            Console.WriteLine("\n0. 취소");
+                        };
+
+                        // [아이템 선택 화면]
+                        context.Content += () =>
+                        {
+                            if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "USING_ITEM")) return;
+                            IEnumerable<ConsumItem> items = player.Inventory.OfType<ConsumItem>();
+                            for (int index = 0; index < items.Count(); index++)
+                            {
+                                ConsumItem item = items.ElementAt(index);
+                                Logger.Write($"{index + 1} ", ConsoleColor.Cyan);
+                                // 아이템 갯수 확인 필요
+                                Console.WriteLine($"{item.Name} | {item.Explain}");
+                            }
+                            Console.WriteLine("\n0. 취소");
+                        };
+                        
+                        
+                        // [플레이어의 턴]
+                        context.Content += () =>
+                        {
+                            if(!(isPlayerTurn.GetValue() == true && mode.GetValue() == "SELECT_DONE")) return;
+                            
+                            // 아이템 사용인 경우
+                            if (selectedItem.GetValue() != null)
+                            {
+                                Console.WriteLine(
+                                    $"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" 
+                                    + $"HP {battle.LastHp} -> {player.HP}\n\n" + $"HP {battle.LastMp} -> {player.MP}\n\n"
+                                    + $"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
+                                return;
+                            }
+
+                            //치명타 체크                            
+                            if(player.IsCritical()) Console.WriteLine("[치명타 공격 발생!]");
+                            // 공격 방식 알림
+                            if (selectedSKill.GetValue() != null) Console.WriteLine($"{player.Name}가 {selectedSKill.GetValue().Name} 스킬을 사용했습니다.\n");
+                            else Console.WriteLine($"{player.Name}의 일반 공격!\n");
+                            
+                            foreach (Monster monster in battle.Target)
+                            {
+                                Console.WriteLine(
+                                    $"Lv.{monster.Level} {monster.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n" + 
+                                    $"HP {monster.BeforeHP} -> {monster.HP}\n");
+                            }
+                            
+                            Console.WriteLine($"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
+                        };
+                            
+                        
+                        // [적군의 턴]
+                        context.Content += () =>
+                        {
+                            if(isPlayerTurn.GetValue() == true) return;
+                            
+                            Actor monster = battle.CurrentActor;
+                            
+                            //치명타 체크                            
+                            if(monster.IsCritical()) Console.WriteLine("[치명타 공격 발생!]\n");
+                            Console.WriteLine(
+                                $"{monster.Name} 의 공격!\n" + $"{player.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
+                                $"Lv.{player.Level} {player.Name}\nHP {player.HP + battle.LastDamage} -> {player.HP}\n");
+                            
+                            Console.WriteLine($"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
+                        };
+                        
+                        
                         context.Choice = () =>
                         {
-                            // 배틀 종료 확인을 최상단에서 체크
                             switch (isPlayerTurn.GetValue())
                             {
                                 case true:
@@ -542,6 +522,7 @@ public class Page
 
                                             if(context.Selection == 0) { _router.PopState();; return; }
                                             if(context.Selection > modes.Length) { context.Error(); return; }
+
                                             mode.SetValue(modes[context.Selection - 1]);
                                             
                                             break;
@@ -573,10 +554,10 @@ public class Page
                                             break;
                                         
                                         case "CHOOSE_TARGET":
+
                                             if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
                                             if (context.Selection > dungeon.MonsterList.Count) { context.Error(); return; }
                                             if ((bool)battle.GetMonsterIsDead(context.Selection - 1)) { context.Error(); break; } // 죽은 몬스터를 선택한 경우
-
                                             
                                             Monster selectedMonster = battle.MonsterList[context.Selection - 1];
 
@@ -595,7 +576,7 @@ public class Page
                                                 battle.Target.Add(battle.MonsterList[context.Selection - 1]);
 
                                                 // 스킬은 2번 선택이나, 대상이 1명 남았을 경우 체크
-                                                if (battle.GetAliveMonsterList().Count > 2 && battle.Target.Count < 2)
+                                                if (battle.GetAliveMonsterList().Count() >= 2 && battle.Target.Count < 2)
                                                 {
                                                     break;
                                                 }
@@ -658,7 +639,8 @@ public class Page
                                                
                                                 // 진행 중인 경우 계속 진행
                                                 isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
-                                                if (isPlayerTurn.GetValue() == false)
+                                                // fix: 상태 저장 방식의 변경으로 인해 상태값으로 바로 인식 불가능 
+                                                if (battle.GetIsPlayerTurn() == false)
                                                 {
                                                     battle.TurnStart();
                                                     cycle.SetValue(prev => prev + 1);
@@ -677,7 +659,7 @@ public class Page
                                         
                                         // 다음 턴도 몬스터일 경우 다음 턴 진행
                                         isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
-                                        if (isPlayerTurn.GetValue() == false || mode.GetValue() == "SELECT_DONE")
+                                        if (battle.GetIsPlayerTurn() == false || mode.GetValue() == "SELECT_DONE")
                                         {
                                             battle.TurnStart();
                                             cycle.SetValue(prev => prev + 1);
@@ -694,13 +676,12 @@ public class Page
                 {
                     Player player = ObjectContext.Instance.Player;
                     Battle battle = ObjectContext.Instance.Battle;
-                    bool isVictory = player.HP > 0;
                     
-                    // rewards
+                    bool isVictory = player.HP > 0;
                     var experience = battle.GetTotalExp();
                     var gold = battle.GetTotalGold();
                     
-                    // 승리 화면
+                    // [승리 화면]
                     context.Content = () =>
                     {
                         if (!isVictory) return;  
@@ -714,13 +695,14 @@ public class Page
                             $"{gold} Gold\n" + $"포션 - 1\n" + $"낡은검 - 1\n\n" + $"0. 다음");
                     };
                     
-                    // 패배 화면
+                    // [패배 화면]
                     context.Content += () =>
                     {
                         if (isVictory) return;
                         Console.WriteLine("[게임 오버]\n패배했습니다.\n\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                     };
-
+                    
+                    // [공통 선택]
                     context.Choice += () =>
                     {
                         if(context.Selection != 0) { context.Error(); return; }
@@ -742,6 +724,7 @@ public class Page
                     // 인벤토리 목록과 일치되도록 다시 체크
                     context.Mount = () => smith.SetPlayerEquipItemList();
                     
+                    // [공통 화면]
                     context.Content = () =>
                     {
                         Console.WriteLine("강화소\n무기를 강화하실 수 있습니다.\n\n[장비 목록]\n");
@@ -755,7 +738,7 @@ public class Page
                         }
                     };
 
-                    // VIEW 화면
+                    // [VIEW 화면]
                     context.Content += () =>
                     {
                         if (mode.GetValue() != "VIEW") return;
@@ -772,7 +755,7 @@ public class Page
                         }
                     };
 
-                    // 강화 페이지
+                    // [강화 페이지]
                     context.Content += () =>
                     {
                         if (mode.GetValue() != "REINFORCEMENT") return;
