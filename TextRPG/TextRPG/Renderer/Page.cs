@@ -427,7 +427,7 @@ public class Page
                             }
 
                             // show player info
-                            Console.WriteLine($"\n[내정보]\n" + $"Lv.{player.Level}  Chad ({player.Class}) \n" + $"HP {player.HP}/{player.MaxHP}\n");
+                            Console.WriteLine($"\n[내정보]\n" + $"Lv.{player.Level}  Chad ({player.Class}) \n" + $"HP {player.HP}/{player.MaxHP}\n" + $"MP {player.MP}/{player.MaxMP}\n");
                             
                             if(mode.GetValue() == "WAITING") Console.WriteLine("0. 나가기\n1. 공격\n2. 스킬\n3. 아이템");
                             if(mode.GetValue() == "CHOOSE_TARGET") Console.WriteLine("0. 취소");
@@ -556,7 +556,7 @@ public class Page
                             if (selectedItem.GetValue() != null)
                             {
                                 Console.WriteLine($"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" 
-                                    + $"HP {battle.LastHp} -> {player.HP}\n\n" + $"HP {battle.LastMp} -> {player.MP}\n\n"
+                                    + $"HP {battle.LastHp} -> {player.HP}\n\n" + $"HP {battle.LastMp} -> {player.MP}\n"
                                     + $"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                 return;
                             }
