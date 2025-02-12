@@ -167,12 +167,6 @@ public class Battle
             actors.AddRange(MonsterList);//몬스터 추가
         TurnQueue = GetTurnQueue(actors);//턴 순서 정하기
     }
-    public bool BattleTurn()//턴 진행시 호출
-    {
-        TurnStart();
-        return TurnEnd();//true: 전투 종료, false: 계속 진행
-    }
-
     public void TurnStart()//턴 시작시 호출
     {
         Actor actor = TurnQueue.Dequeue();
