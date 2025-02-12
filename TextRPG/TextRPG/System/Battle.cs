@@ -128,7 +128,7 @@ public class Battle
     void OnMonsterDeath(Monster monster)//몬스터가 죽었을 때 호출
     {
         TotalExp += monster.EXP;
-        TotalGold += monster.Gold;
+        TotalGold += monster.GoldReward;
         RewardItems?.AddRange(monster.DroppedItems);
     }
     public void SetTargetMonster(List<Monster> monsters)//타겟 몬스터 설정
@@ -194,13 +194,9 @@ public class Battle
     }
     public bool TurnEnd()//턴 종료시 호출 (true: 전투 종료, false: 계속 진행)
     {
-        //플레이어 사망체크
         for(int i = 0; i < MonsterList?.Count; i++)
         {
-            if (!MonsterList[i].IsDead && MonsterList[i].HP <=0)//몬스터 사망 체크.
-            {
-                OnMonsterDeath(MonsterList[i]);
-            }
+            OnMonsterDeath(MonsterList[i]);
         }
         return CheckBattleEnd();
     }
