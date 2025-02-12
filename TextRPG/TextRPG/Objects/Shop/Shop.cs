@@ -120,7 +120,7 @@ namespace TextRPG.Objects.Shop
             ConsumItem consumItem = ConsumItemShop[_ItemName] as ConsumItem;
             if (CheckPlayerHave(consumItem))
             {
-                ConsumItem cItem = ObjectContext.Instance.Player.Inventory.FirstOrDefault(consumItem) as ConsumItem;
+                ConsumItem cItem = ObjectContext.Instance.Player.Inventory.OfType<ConsumItem>().FirstOrDefault(item => item.Name == consumItem.Name);
                 cItem.Num += _AddNum;
             }
             else
