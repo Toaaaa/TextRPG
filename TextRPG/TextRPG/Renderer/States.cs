@@ -36,6 +36,14 @@ public class States
         LocationState = locationState;
     }
 
+    public void Dispatch()
+    {
+        foreach (var state in _states)
+        {
+            ((dynamic)state).Allocate();
+        }
+    }
+
     // 클리어의 개념이 달라짐
     public void Clear()
     {
