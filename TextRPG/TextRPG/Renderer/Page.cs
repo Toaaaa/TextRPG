@@ -47,45 +47,42 @@ public class Page
 
                     context.Content = () =>
                     {
-                        //skip
+                        // skip
                         _router.Navigate(PageType.START_PAGE);
-
                         Console.WriteLine($"스파르타 던전에 오신 여러분 환영합니다.");
-
-                        if (mode.GetValue() == "NAME")
-                        {
-                            context.SelectionMode = Renderer.SelectionType.text;
-                            Console.WriteLine($"원하시는 이름을 설정해주세요.");
-                        }
-
-                        if (mode.GetValue() == "CLASS")
-                        {
-                            context.SelectionMode = Renderer.SelectionType.number;
-                            Console.WriteLine(
-                                $"{player.Name}님 원하시는 직업을 선택해주세요.\n\n" +
-                                $"1.전사\n2.궁수\n3.도적\n4.마법사");
-                        }
-                           
                     };
-                    context.Choice = () =>
-                    {
-                        if (mode.GetValue() == "NAME")
-                        {
-                            if(string.IsNullOrWhiteSpace(context.SelectionText)) context.Error();
-                            else
-                            {
-                                player.Name = context.SelectionText;
-                                mode.SetValue("CLASS");
-                                return;
-                            }
-                        }
 
-                        if (mode.GetValue() == "CLASS")
-                        {
-                            if (context.Selection < 0 || context.Selection > classes.Length) { context.Error(); return; }
-                            player.Class = classes[context.Selection - 1];
-                            _router.Navigate(PageType.START_PAGE);
-                        }
+                    // 이름 선택 화면
+                    context.Content += () =>
+                    {
+                        if (mode.GetValue() != "NAME") return;
+                        
+                        context.SelectionMode = Renderer.SelectionType.text;
+                        Console.WriteLine($"원하시는 이름을 설정해주세요.");
+                    };
+                    context.Choice += () =>
+                    {
+                        if (mode.GetValue() != "NAME") return;
+                      
+                        player.Name = context.SelectionText;
+                        mode.SetValue("CLASS");
+                    };
+
+                    // 직업 선택 화면
+                    context.Content += () =>
+                    {
+                        if (mode.GetValue() != "CLASS") return;
+                        
+                        context.SelectionMode = Renderer.SelectionType.number;
+                        Console.WriteLine($"{player.Name}님 원하시는 직업을 선택해주세요.\n\n" + $"1.전사\n2.궁수\n3.도적\n4.마법사");
+                    };
+                    context.Choice += () =>
+                    {
+                        if (mode.GetValue() != "CLASS") return;
+                      
+                        if (context.Selection < 0 || context.Selection > classes.Length) { context.Error(); return; }
+                        player.Class = classes[context.Selection - 1];
+                        _router.Navigate(PageType.START_PAGE);
                     };
                 })
             },
@@ -137,12 +134,8 @@ public class Page
                         {
                             switch (context.Selection)
                             {
-                                case 0:
-                                    _router.PopState();
-                                    break;
-                                default:
-                                    context.Error();
-                                    break;
+                                case 0: _router.PopState(); break;
+                                default: context.Error(); break;
                             }
                         };
                     })
@@ -161,6 +154,7 @@ public class Page
                     {
                         Console.WriteLine($"인벤토리\n" + $"보유 중인 아이템을 관리할 수 있습니다.\n\n" + $"[장비 목록]");
                         
+                        // 목록 표시는 세부 사항으로 인해 유사한 방식이나 하나로 적용하기 어려움.
                         if(!equipments.Any()) Console.WriteLine("보유한 장비가 없습니다.");
                         for (int i = 0; i < equipments.Count(); i++)
                         {
