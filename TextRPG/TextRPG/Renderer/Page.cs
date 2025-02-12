@@ -156,7 +156,7 @@ public class Page
                     var consumItems = player.Inventory.OfType<ConsumItem>();
                     
                     var mode = states.Get<string>("MODE").Init("VIEW");
-
+                    
                     context.Content = () =>
                     {
                         Console.WriteLine($"인벤토리\n" + $"보유 중인 아이템을 관리할 수 있습니다.\n\n" + $"[장비 목록]");
@@ -193,36 +193,33 @@ public class Page
                         }
                     };
                     
-                    context.Choice = () =>
+
+                    // 선택 화면일 때
+                    context.Choice += () =>
                     {
-                        switch (mode.GetValue())
+                        if (mode.GetValue() != "VIEW") return;
+                        switch (context.Selection)
                         {
-                            case "VIEW":
-                                switch (context.Selection)
-                                {
-                                    case 0:
-                                        _router.PopState();
-                                        break;
-                                    case 1:
-                                        mode.SetValue("EQUIPMENT");
-                                        break;
-                                    default:
-                                        context.Error();
-                                        break;
-                                }
-                                break;
-                            case "EQUIPMENT":
-                                if (context.Selection == 0) { mode.SetValue("VIEW"); break; }
-                                if (context.Selection > equipments.Count()) { context.Error(); break; }
-                                
-                                // 장착, 미장착
-                                EquipItem equipItem = equipments.ElementAt(context.Selection - 1);
-                                if(equipItem.IsEquip) player.UnequipItem(equipItem);
-                                else player.EquipItem(equipItem);
-                                
-                                break;
+                            case 0: _router.PopState(); break;
+                            case 1: mode.SetValue("EQUIPMENT"); break;
+                            default: context.Error(); break;
                         }
                     };
+                    
+                    // 장착 모드일 때   
+                    context.Choice += () =>
+                    {
+                        if (mode.GetValue() != "EQUIPMENT") return;
+                        
+                        if (context.Selection == 0) { mode.SetValue("VIEW"); return; }
+                        if (context.Selection > equipments.Count()) { context.Error(); return; }
+                        
+                        // 장착, 미장착
+                        EquipItem equipItem = equipments.ElementAt(context.Selection - 1);
+                        if (equipItem.IsEquip) player.UnequipItem(equipItem);
+                        else player.EquipItem(equipItem);
+                    };
+                    
                 })
             },
             {
