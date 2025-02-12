@@ -18,10 +18,9 @@ public class State<T>()
     
     public State<T> Init(T newValue)
     {
-        // if(isInitialized) return this;
         this._defaultValue = newValue;
+        this._memoValue = newValue;
         this._value = newValue;
-        // isInitialized = true;
         return this;
     }
 
@@ -35,18 +34,18 @@ public class State<T>()
         return this._value;
     }
     
-    public void SetValue(T newValue)
-    {
-        this._memoValue = newValue;
-    }
-
     public void Allocate()
     {
         this._value = this._memoValue;
     }
     
+    public void SetValue(T newValue)
+    {
+        this._memoValue = newValue;
+    }
+    
     public void SetValue(Func<T, T> newFunc)
     {
-        this._value = newFunc(this._value);
+        this._memoValue = newFunc(this._value);
     }
 }
