@@ -230,132 +230,106 @@ public class Page
                     var mode = states.Get<string>("MODE").Init("VIEW");
                     var category = states.Get<string>("CATEGORY").Init("NONE");
                     var result = states.Get<TradeResult>("RESULT").Init(TradeResult.None);
-                    
+
+                    // 일반 선택 화면
                     context.Content = () =>
                     {
                         Console.WriteLine($"상점\n" + $"필요한 아이템을 얻을 수 있는 상점입니다.\n\n" + $"[보유 골드]\n{player.Gold} G\n");
-
-                        switch (mode.GetValue())
-                        {
-                            case "VIEW":
-                                Console.WriteLine("0. 나가기\n1. 구매하기\n2. 판매하기\n\n" + "원하시는 행동을 입력해주세요. >>");
-                                break;
-                            
-                            case "CATEGORY":
-                                Console.WriteLine("0. 나가기\n1. 장비\n2. 소모품\n\n" + "원하시는 행동을 입력해주세요. >>");
-                                break;
-                            
-                            case "BUYING":
-                                switch (category.GetValue())
-                                {
-                                    case "EQUIPMENT":
-                                        for (int i = 0; i < equipItems.Count; i++)
-                                        {
-                                            Item item = (Item)equipItems[i];
-                                            bool isExistItem = shop.CheckPlayerHave(item!);
-                                            Logger.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {(isExistItem? "구매 완료" : item.Price +"G")}", isExistItem ? ConsoleColor.DarkCyan: ConsoleColor.Gray);
-                                        }
-                                        
-                                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("\n구매를 성공했습니다.", ConsoleColor.Green);
-                                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("\n이미 구입한 상품입니다.", ConsoleColor.Red);
-                                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("\n골드가 부족합니다.", ConsoleColor.Red);
-                                        Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
-                                        break;
-                                    
-                                    case "CONSUM":
-                                        // Logger.Debug(player.Inventory.Count().ToString());
-                                        for (int i = 0; i < consumItems.Count; i++)
-                                        {
-                                            ConsumItem currentItem = (ConsumItem)consumItems[i];
-                                            // 다른 객체라 값으로 비교
-                                            var existItemByName = player.Inventory.Find(item => item.Name == currentItem.Name) as ConsumItem;
-                                            Console.WriteLine($"{i + 1}. { currentItem.Name} | {currentItem.Explain} | {currentItem.Price}G | {(existItemByName == null ? "0" :  existItemByName.Num)} 개 보유 중");
-                                        }
-                                        
-                                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("\n구매를 성공했습니다.", ConsoleColor.Green);
-                                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("\n이미 구입한 상품입니다.", ConsoleColor.Red);
-                                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("\n골드가 부족합니다.", ConsoleColor.Red);
-                                        Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
-                                        break;
-                                }
-                                break;
-                            case "SELLING":
-                                {
-                                    for (int i = 0; i < inventory.Count; i++)
-                                    {
-                                        Item item = inventory[i];
-                                        Console.WriteLine($"{i + 1}. {item.Name} | {item.Explain} | {item.Price}G");
-                                    }
-                                    
-                                    Console.WriteLine("\n0. 나가기\n\n" + "원하시는 행동을 입력해주세요. >>");
-                                }
-                                break;
-                        }
+                        if(mode.GetValue() == "VIEW") Console.WriteLine("0. 나가기\n1. 구매하기\n2. 판매하기\n\n" + "원하시는 행동을 입력해주세요. >>");
+                        if(mode.GetValue() == "CATEGORY") Console.WriteLine("0. 나가기\n1. 장비\n2. 소모품\n\n" + "원하시는 행동을 입력해주세요. >>");
                     };
-                    
                     context.Choice = () =>
                     {
-                        switch (mode.GetValue())
+                        if(mode.GetValue() == "VIEW") switch (context.Selection)
                         {
-                            case "VIEW":
-                                switch (context.Selection)
-                                {
-                                    case 0:
-                                        _router.PopState();
-                                        break;
-                                    case 1:
-                                        mode.SetValue("CATEGORY");
-                                        break;
-                                    case 2:
-                                        mode.SetValue("SELLING");
-                                        break;
-                                    default:
-                                        context.Error();
-                                        break;
-                                }
-                                break;
-                            case "CATEGORY":
-                                switch (context.Selection)
-                                {
-                                    case 0:
-                                        mode.SetValue("VIEW");
-                                        break;
-                                    case 1:
-                                        mode.SetValue("BUYING");
-                                        category.SetValue("EQUIPMENT");                                        
-                                        break;
-                                    case 2:
-                                        mode.SetValue("BUYING");
-                                        category.SetValue("CONSUM");                                 
-                                        break;
-                                    default:
-                                        context.Error();
-                                        break;
-                                }
-                                break;
-                            case "BUYING":
-                                if (context.Selection == 0) { mode.SetValue("CATEGORY"); category.SetValue("NONE"); result.SetValue(TradeResult.None); break; }
-                                switch (category.GetValue())
-                                {
-                                     case "EQUIPMENT":
-                                         if (context.Selection > equipItems.Count) { context.Error(); break; }
-                                         result.SetValue(shop.BuyEquipItem(context.Selection));
-                                         break;
-                                     
-                                     case "CONSUM":
-                                         if (context.Selection > consumItems.Count) { context.Error(); break; }
-                                         result.SetValue(shop.BuyConsumItem(context.Selection));
-                                         break;
-                                }
-                                break;
-                            case "SELLING":
-                                if (context.Selection == 0) { mode.SetValue("VIEW"); result.SetValue(TradeResult.None); break; }
-                                if (context.Selection > inventory.Count) { context.Error(); break; }
-                                
-                                shop.SellItem(context.Selection - 1);
-                                break;
+                            case 0: _router.PopState(); break;
+                            case 1: mode.SetValue("CATEGORY"); break;
+                            case 2: mode.SetValue("SELLING"); break;
+                            default: context.Error(); break;
+                        }
+                        
+                        if(mode.GetValue() == "CATEGORY") switch (context.Selection)
+                        {
+                            case 0: mode.SetValue("VIEW"); break;
+                            case 1: mode.SetValue("BUYING"); category.SetValue("EQUIPMENT"); break;
+                            case 2: mode.SetValue("BUYING"); category.SetValue("CONSUM"); break;
+                            default: context.Error(); break;
                         }
                     };
+
+                    // 장비 구매일 때
+                    context.Content += () =>
+                    {
+                        if(!(mode.GetValue() == "BUYING" && category.GetValue() == "EQUIPMENT")) return;
+                        for (int i = 0; i < equipItems.Count; i++)
+                        {
+                            Item item = (Item)equipItems[i];
+                            bool isExistItem = shop.CheckPlayerHave(item!);
+                            Logger.WriteLine($"{i + 1}. { item.Name} | {item.Explain} | {(isExistItem? "구매 완료" : item.Price +"G")}", isExistItem ? ConsoleColor.DarkCyan: ConsoleColor.Gray);
+                        }
+                                        
+                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("\n구매를 성공했습니다.", ConsoleColor.Green);
+                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("\n이미 구입한 상품입니다.", ConsoleColor.Red);
+                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("\n골드가 부족합니다.", ConsoleColor.Red);
+                        Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                    };
+                    context.Choice += () =>
+                    {
+                        if(!(mode.GetValue() == "BUYING" && category.GetValue() == "EQUIPMENT")) return;
+                        if (context.Selection == 0) { mode.SetValue("CATEGORY"); category.SetValue("NONE"); result.SetValue(TradeResult.None); return; }
+                        if (context.Selection > equipItems.Count) { context.Error(); return; }
+                        
+                        result.SetValue(shop.BuyEquipItem(context.Selection));
+                    };
+                    
+                    // 아이템 구매일 때
+                    context.Content += () =>
+                    {
+                        if(!(mode.GetValue() == "BUYING" && category.GetValue() == "CONSUM")) return;
+                        for (int i = 0; i < consumItems.Count; i++)
+                        {
+                            ConsumItem currentItem = (ConsumItem)consumItems[i];
+                            var existItemByName = player.Inventory.Find(item => item.Name == currentItem.Name) as ConsumItem; // 다른 객체라 값으로 비교
+                            Console.WriteLine($"{i + 1}. { currentItem.Name} | {currentItem.Explain} | {currentItem.Price}G | {(existItemByName == null ? "0" :  existItemByName.Num)} 개 보유 중");
+                        }
+                                     
+                        if(result.GetValue() == TradeResult.Success) Logger.WriteLine("\n구매를 성공했습니다.", ConsoleColor.Green);
+                        if(result.GetValue() == TradeResult.Failed_AlreadyHave) Logger.WriteLine("\n이미 구입한 상품입니다.", ConsoleColor.Red);
+                        if(result.GetValue() == TradeResult.Failed_NotEnoughGold) Logger.WriteLine("\n골드가 부족합니다.", ConsoleColor.Red);
+                        Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                    };
+                    context.Choice += () =>
+                    {
+                        if(!(mode.GetValue() == "BUYING" && category.GetValue() == "CONSUM")) return;
+                        if (context.Selection == 0) { mode.SetValue("CATEGORY"); category.SetValue("NONE"); result.SetValue(TradeResult.None); return; }
+                        if (context.Selection > consumItems.Count) { context.Error(); return; }
+                        
+                        result.SetValue(shop.BuyConsumItem(context.Selection));
+                    };
+
+                    // 판매 일 때
+                    context.Content += () =>
+                    {
+                        if(mode.GetValue() != "SELLING") return;
+                        
+                        for (int i = 0; i < inventory.Count; i++)
+                        {
+                            Item item = inventory[i];
+                            Console.WriteLine($"{i + 1}. {item.Name} | {item.Explain} | {item.Price}G");
+                        }
+                                    
+                        Console.WriteLine("\n0. 나가기\n\n" + "원하시는 행동을 입력해주세요. >>");
+                    };
+                    context.Choice += () =>
+                    {
+                        if(mode.GetValue() != "SELLING") return;
+
+                        if (context.Selection == 0) { mode.SetValue("VIEW"); result.SetValue(TradeResult.None); return; }
+                        if (context.Selection > inventory.Count) { context.Error(); return; }
+                                
+                        shop.SellItem(context.Selection - 1);
+                    };
+                    
                 })
             },
             {
