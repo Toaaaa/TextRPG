@@ -401,7 +401,7 @@ public class Page
                         var selectedItem = states.Get<ConsumItem?>("SELECTED_ITEM").Init(null);
                         // do: 한번만 호출 필요(스킬 클래스에 스태틱으로)
                         Dictionary<string, Skill> skills = Skill.LoadSkillDictionary(Path.Combine(Path.GetFullPath(@"../../../Objects/SkillList.json")));
-
+                        dynamic previousPlayerInfo = null!; context.Mount = () => { previousPlayerInfo =  new { Level = player.Level, HP = player.HP, EXP = player.EXP }; };
                         
                         // [선택 화면]
                         context.Content += () =>
@@ -505,8 +505,8 @@ public class Page
                                 battle.SetTargetMonster(battle.GetAliveMonsterList());
                                 Battle.PlayerAction = () =>
                                 {
-                                    battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue()));
-                                    player.MP -= selectedSKill.GetValue().Mana;
+                                    battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, currentSkill));
+                                    player.MP -= currentSkill.Mana;
                                 };
 
                                 ExecuteTurnBySelectDone();
@@ -580,7 +580,8 @@ public class Page
                         {
                             if (!(isPlayerTurn.GetValue() == true && mode.GetValue() == "SELECT_DONE")) return;
                             if(context.Selection != 0) { context.Error(); return; }
-                            if (battle.CheckBattleEnd()) { _router.Navigate(PageType.BATTLE_RESULT_PAGE); }
+
+                            if (battle.CheckBattleEnd()) { _router.Navigate(PageType.BATTLE_RESULT_PAGE, new { previousPlayerInfo }); }
                             
                             // clear
                             mode.SetValue("WAITING");
@@ -622,8 +623,7 @@ public class Page
                         {
                             if(isPlayerTurn.GetValue() == true) return;
                             if(context.Selection != 0) { context.Error(); return; }
-                            if(battle.CheckBattleEnd()) { _router.Navigate(PageType.BATTLE_RESULT_PAGE); }
-                            if(player.HP <= 0) { _router.Navigate(PageType.BATTLE_RESULT_PAGE); }
+                            if(battle.CheckBattleEnd() || player.HP <= 0) { _router.Navigate(PageType.BATTLE_RESULT_PAGE, new { previousPlayerInfo }); }
                             if (cycle.GetValue() == GetCurrentMaxTurnCycle()) { RefillTurnCycle(); return; }
                                         
                             // 다음 턴도 몬스터일 경우 다음 턴 진행
@@ -644,9 +644,11 @@ public class Page
                     Battle battle = ObjectContext.Instance.Battle;
                     
                     bool isVictory = player.HP > 0;
+                    // 각 페이지들에서 전달하는 정보가 다를 경우를 대비하여 key-value 로 관리 필요.
+                    dynamic? parameters = null; context.Mount += () => parameters = context.States.GetParams<object>();
 
                     // [승리화면] - 보상 등록
-                    context.Mount = () =>
+                    context.Mount += () =>
                     {
                         if (!isVictory) return;
                         battle.TurnEnd();
@@ -655,16 +657,17 @@ public class Page
                     // [승리 화면]
                     context.Content = () =>
                     {
-                        if (!isVictory) return;  
+                        if (!isVictory) return;
+                        dynamic previousPlayerInfo = parameters.previousPlayerInfo;
                         
                         // 레벨업 정보, 처음 체력 정보 알기 필요
                         Console.WriteLine(
                             $"Battle!! - Result\n\n" + $"Victory\n\n" +
                             $"던전에서 몬스터 {battle.MonsterList.Count}마리를 잡았습니다.\n\n" +
                             $"[캐릭터 정보]\n" +
-                            $"Lv.1 -> Lv. {player.Level}\n"
-                            + $"HP 100 -> {player.HP}\n" +
-                            $"[획득 경험치]\n{battle.GetTotalExp()}\n\n" +
+                            $"Lv.{previousPlayerInfo.Level} -> Lv. {player.Level}\n" +
+                            $"HP {previousPlayerInfo.HP} -> {player.HP}\n" +
+                            $"EXP {previousPlayerInfo.EXP} -> {player.EXP}\n" +
                             $"[획득 아이템]\n" +
                             $"{battle.GetTotalGold()} Gold\n");
                         
