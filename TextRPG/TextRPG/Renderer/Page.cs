@@ -694,40 +694,37 @@ public class Page
                 {
                     Player player = ObjectContext.Instance.Player;
                     Battle battle = ObjectContext.Instance.Battle;
-                    bool isDefeat = player.HP <= 0;
+                    bool isVictory = player.HP > 0;
                     
                     // rewards
                     var experience = battle.GetTotalExp();
-                    var gold = battle.GetTotalGold(); 
+                    var gold = battle.GetTotalGold();
                     
+                    // 승리 화면
                     context.Content = () =>
                     {
-                        if (isDefeat)
-                        {
-                            Console.WriteLine("[게임 오버]\n패배했습니다.\n\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
-                            return;
-                        }
+                        if (!isVictory) return;  
                         
                         Console.WriteLine(
-                            $"Battle!! - Result\n\n" +
-                            $"Victory\n\n" +
+                            $"Battle!! - Result\n\n" + $"Victory\n\n" +
                             $"던전에서 몬스터 {battle.MonsterList.Count}마리를 잡았습니다.\n\n" +
                             $"[캐릭터 정보]\n" +
-                            $"Lv.1 Chad -> Lv. {player.Level}" +
-                            $"Chad\n" +
-                            $"HP 100 -> 74\n" +
-                            $"exp {player.EXP} -> {player.EXP + experience}\n\n" +
+                            $"Lv.1 Chad -> Lv. {player.Level}" + $"Chad\n" + $"HP 100 -> 74\n" + $"exp {player.EXP} -> {player.EXP + experience}\n\n" +
                             $"[획득 아이템]\n" +
-                            $"{gold} Gold\n" +
-                            $"포션 - 1\n" +
-                            $"낡은검 - 1\n\n" +
-                            $"0. 다음");
+                            $"{gold} Gold\n" + $"포션 - 1\n" + $"낡은검 - 1\n\n" + $"0. 다음");
+                    };
+                    
+                    // 패배 화면
+                    context.Content += () =>
+                    {
+                        if (isVictory) return;
+                        Console.WriteLine("[게임 오버]\n패배했습니다.\n\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                     };
 
-                    context.Choice = () =>
+                    context.Choice += () =>
                     {
                         if(context.Selection != 0) { context.Error(); return; }
-                        battle.EndBattle();
+                        if(isVictory) battle.EndBattle();
                         _router.PopState(3);
                     };
                 })
