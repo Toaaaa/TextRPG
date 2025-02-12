@@ -2,7 +2,7 @@ public class States
 {
     // 상태
     private List<object> _states = new List<object>();
-    private object LocationState = "";
+    private object? _locationState;
     
     public State<T> Get<T>(string selectedKey)
     {
@@ -20,20 +20,13 @@ public class States
     // 상태 과련
     public T GetParams<T>()
     {
-        try
-        {
-            return (T)Convert.ChangeType(LocationState, typeof(T));
-        }
-        catch (Exception e)
-        {
-            throw new InvalidOperationException($"Cannot convert LocationState to type {typeof(T)}.");
-        }
+        return ((T)this._locationState!)!;
     }
 
     // 굳이 있는 이유: 타입으로 전달
-    public void SetParams<T>(T locationState)
+    public void SetParams(object locationState)
     {
-        LocationState = locationState;
+        _locationState = locationState;
     }
 
     public void Dispatch()
@@ -52,6 +45,6 @@ public class States
             // 바로 접근 어려움.
             ((dynamic)state).Reset();
         }
-        LocationState = "";
+        _locationState = null;
     }
 }
