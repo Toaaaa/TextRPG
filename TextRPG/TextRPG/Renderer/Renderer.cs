@@ -1,3 +1,5 @@
+
+
 public class Renderer
 {
     public States States { get; private set; } = new States();
@@ -24,7 +26,7 @@ public class Renderer
     {
         Register = register;
     }
-
+    
     public void LazyLoad()
     {
         if (Register != null)
@@ -65,7 +67,7 @@ public class Renderer
                 Error();
                 break;
         }
-        
+        this.States.Dispatch();
         this.Render();
     }
 }
