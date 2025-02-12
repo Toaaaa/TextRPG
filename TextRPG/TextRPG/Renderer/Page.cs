@@ -736,18 +736,19 @@ public class Page
                 PageType.SMITHY_PAGE,
                 new Renderer((context, states) =>
                 {   
-                    Player player = ObjectContext.Instance.Player;
                     Smith smith = ObjectContext.Instance.Smith; 
                     var equipments = smith.PlayerEquipItemList;
-
+                    
                     var mode = context.States.Get<string>("MODE").Init("VIEW");
                     var result = context.States.Get<ESmithResult>("SMITH_RESULT").Init(ESmithResult.None);
 
+                    // 인벤토리 목록과 일치되도록 다시 체크
                     context.Mount = () => smith.SetPlayerEquipItemList();
                     
                     context.Content = () =>
                     {
-                        Console.WriteLine("강화소\n무기를 강화하실 수 있습니다.\n");
+                        Console.WriteLine("강화소\n무기를 강화하실 수 있습니다.\n\n[장비 목록]\n");
+                        if(equipments.Count == 0) Console.WriteLine("강화할 무기가 없습니다.");
                         for (int i = 0; i < equipments.Count(); i++)
                         {
                             EquipItem item = equipments.ElementAt(i);
@@ -755,64 +756,49 @@ public class Page
                             if(mode.GetValue() == "REINFORCEMENT") Logger.Write($"{i + 1}. ", ConsoleColor.Cyan);
                             Console.WriteLine($"{item.Name} | {item.Explain} | +{item.Stat}");
                         }
-                        
-                        if(mode.GetValue() == "VIEW") Console.WriteLine($"\n0. 나가기\n1. 강화하기\n\n원하시는 행동을 입력해주세요. >>");
-                        if (mode.GetValue() == "REINFORCEMENT")
-                        {
-                            switch (result.GetValue())
-                            {
-                                case ESmithResult.None:
-                                    break;
-                                case ESmithResult.Success:
-                                    Logger.WriteLine("강화에 성공했습니다.", ConsoleColor.Green);
-                                    break;
-                                case ESmithResult.Failed_NotEnoughStone:
-                                    Logger.WriteLine("강화석이 부족합니다.", ConsoleColor.Red);
-                                    break;
-                                case ESmithResult.Failed_NotEnoughGold:
-                                    Logger.WriteLine("골드가 부족합니다.", ConsoleColor.Red);
-                                    break;
-                                case ESmithResult.Failed_MaxReinforce:
-                                    Logger.WriteLine("최대 강화치입니다.", ConsoleColor.Red);
-                                    break;
-                            }
-                            Console.WriteLine($"\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
-                        }
                     };
 
-                    context.Choice = () =>
+                    // VIEW 화면
+                    context.Content += () =>
                     {
-                        switch (mode.GetValue())
+                        if (mode.GetValue() != "VIEW") return;
+                        Console.WriteLine($"\n0. 나가기\n1. 강화하기\n\n원하시는 행동을 입력해주세요. >>");
+                    };
+                    context.Choice += () =>
+                    {
+                        if (mode.GetValue() != "VIEW") return;
+                        switch (context.Selection)
                         {
-                            case "VIEW":
-                                switch (context.Selection)
-                                {
-                                    case 0:
-                                        _router.PopState();
-                                        break;
-                                    case 1:
-                                        mode.SetValue("REINFORCEMENT");
-                                        break;
-                                    default:
-                                        context.Error();
-                                        break;
-                                }
-                                break;
-                            case "REINFORCEMENT":
-                                result.SetValue(ESmithResult.None);
-                                
-                                if(context.Selection == 0) { mode.SetValue("VIEW"); break; }
-                                if(context.Selection > equipments.Count()) { context.Error(); return; }
-
-                                result.SetValue(smith.ReinforceItem(context.Selection));
-                                break;
-                                
-                        }
-                        {
-                            
+                            case 0: _router.PopState(); break;
+                            case 1: mode.SetValue("REINFORCEMENT"); break;
+                            default: context.Error(); break;
                         }
                     };
 
+                    // 강화 페이지
+                    context.Content += () =>
+                    {
+                        if (mode.GetValue() != "REINFORCEMENT") return;
+                        switch (result.GetValue())
+                        {
+                            case ESmithResult.None: break;
+                            case ESmithResult.Success: Logger.WriteLine("강화에 성공했습니다.", ConsoleColor.Green); break;
+                            case ESmithResult.Failed_NotEnoughStone: Logger.WriteLine("강화석이 부족합니다.", ConsoleColor.Red); break;
+                            case ESmithResult.Failed_NotEnoughGold: Logger.WriteLine("골드가 부족합니다.", ConsoleColor.Red); break;
+                            case ESmithResult.Failed_MaxReinforce: Logger.WriteLine("최대 강화치입니다.", ConsoleColor.Red); break;
+                        }
+                        Console.WriteLine($"\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                    };
+                    context.Choice += () =>
+                    {
+                        if (mode.GetValue() != "REINFORCEMENT") return;
+                        result.SetValue(ESmithResult.None);
+                                
+                        if(context.Selection == 0) { mode.SetValue("VIEW"); return; }
+                        if(context.Selection > equipments.Count()) { context.Error(); return; }
+
+                        result.SetValue(smith.ReinforceItem(context.Selection));
+                    };
                 })
             }
         };    
