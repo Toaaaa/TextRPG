@@ -26,7 +26,7 @@ public class Player : Actor
         MaxMP = 30;
         MP = 30;
         AddHP = 0;
-        Gold = 1500;
+        Gold = 15000;
         EXP = 0;
         SPD = 5;
         CRIT = 10;
