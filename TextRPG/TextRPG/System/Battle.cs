@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Numerics;
 using TextRPG.Objects;
 using TextRPG.Objects.Items;
@@ -171,7 +172,9 @@ public class Battle
     {
         Actor actor = TurnQueue.Dequeue();
         CurrentActor = actor;
-        if (actor is Player && Target?.Count >0)//플레이어 턴일 때
+        // Logger.Debug(actor.GetType().Name);
+        // Logger.Debug(Target.Count.ToString());
+        if (actor is Player)//플레이어 턴일 때
         {
             LastHp = ObjectContext.Instance.Player.HP;//플레이어 HP 저장
             LastMp = ObjectContext.Instance.Player.MP;//플레이어 MP 저장

@@ -393,6 +393,7 @@ public class Page
                             mode.SetValue("SELECT_DONE");
                             isPlayerTurn.SetValue(battle.GetIsPlayerTurn());
                             battle.TurnStart();
+
                             cycle.SetValue(prev => prev + 1);
                         }
                         
@@ -467,9 +468,15 @@ public class Page
                             // 단일 공격// 대상 지정, 플레이어 행동 결정 완료
                             else { battle.SetTargetMonster([selectedMonster]); }
                             // 일반 공격
-                            if (selectedSKill.GetValue() == null) { Battle.PlayerAction = () => battle.Target.ForEach(target => battle.PlayerAttack((target as Monster)!)); }
+                            if (selectedSKill.GetValue() == null) { Battle.PlayerAction = () =>
+                            {
+                                battle.Target.ForEach(target => battle.PlayerAttack((target as Monster)!));
+                            }; }
                             // 스킬 공격 // 사용된 마나 감소시키기
-                            else { Battle.PlayerAction = () => { battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue())); player.MP -= selectedSKill.GetValue().Mana; }; }
+                            else { Battle.PlayerAction = () => {
+                                battle.Target.ForEach(target => battle.PlayerSkillAttack(target as Monster, selectedSKill.GetValue()));
+                                player.MP -= selectedSKill.GetValue().Mana;
+                            }; }
 
                             ExecuteTurnBySelectDone();
                         };
@@ -535,12 +542,14 @@ public class Page
                             if(context.Selection == 0) { mode.SetValue("WAITING"); return; }
                             if (context.Selection > consumItems.Count() + 1) { context.Error(); return; }
                                             
-                            selectedItem.SetValue(consumItems.ElementAt(context.Selection - 1));
+                            var currentConsumItem = consumItems.ElementAt(context.Selection - 1);
+                            selectedItem.SetValue(currentConsumItem);
+
                             Battle.PlayerAction = () =>
                             {
-                                selectedItem.GetValue().UseItem(player);
+                                currentConsumItem.UseItem(player);
                                 // 소모된 아이템 제거
-                                player.Inventory.Remove(selectedItem.GetValue());
+                                player.Inventory.Remove(currentConsumItem);
                             };
                                             
                             ExecuteTurnBySelectDone();
@@ -556,8 +565,8 @@ public class Page
                             if (selectedItem.GetValue() != null)
                             {
                                 Console.WriteLine($"{player.Name} 가 {selectedItem.GetValue().Name}을 사용했습니다.\n" 
-                                    + $"HP {battle.LastHp} -> {player.HP}\n\n" + $"HP {battle.LastMp} -> {player.MP}\n"
-                                    + $"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
+                                    + $"\nHP: {battle.LastHp} -> {player.HP}\n" + $"MP: {battle.LastMp} -> {player.MP}\n"
+                                    + $"\n0. 다음\n\n원하시는 행동을 입력해주세요. >>");
                                 return;
                             }
 
@@ -614,7 +623,7 @@ public class Page
                             //치명타 체크                            
                             if(monster.IsCritical()) Console.WriteLine("[치명타 공격 발생!]\n");
                             Console.WriteLine(
-                                $"{monster.Name} 의 공격!\n" + $"{player.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
+                                $"{monster.Name} 의 공격!\n\n" + $"{player.Name} 을(를) 맞췄습니다. [데미지 : {battle.LastDamage}]\n\n" +
                                 $"Lv.{player.Level} {player.Name}\nHP {player.HP + battle.LastDamage} -> {player.HP}\n");
                             
                             Console.WriteLine($"0. 다음\n\n원하시는 행동을 입력해주세요. >>");
@@ -669,11 +678,11 @@ public class Page
                             $"HP {previousPlayerInfo.HP} -> {player.HP}\n" +
                             $"EXP {previousPlayerInfo.EXP} -> {player.EXP}\n" +
                             $"[획득 아이템]\n" +
-                            $"{battle.GetTotalGold()} Gold\n");
+                            $"{battle.GetTotalGold()} Gold");
                         
                         battle.RewardItems?.ForEach(Console.WriteLine);
                         
-                        Console.WriteLine($"0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
+                        Console.WriteLine($"\n0. 나가기\n\n원하시는 행동을 입력해주세요. >>");
                     };
                     
                     // [패배 화면]
@@ -714,7 +723,7 @@ public class Page
                             EquipItem item = equipments.ElementAt(i);
                             
                             if(mode.GetValue() == "REINFORCEMENT") Logger.Write($"{i + 1}. ", ConsoleColor.Cyan);
-                            Console.WriteLine($"{item.Name} | {item.Explain} | +{item.Stat}");
+                            Console.WriteLine($"{item.Name} | {item.Explain}");
                         }
                     };
 
