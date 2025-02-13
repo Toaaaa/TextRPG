@@ -48,7 +48,7 @@ public class Page
                     context.Content = () =>
                     {
                         // skip
-                        _router.Navigate(PageType.START_PAGE);
+                        // _router.Navigate(PageType.START_PAGE);
                         Console.WriteLine($"스파르타 던전에 오신 여러분 환영합니다.");
                     };
 
@@ -119,7 +119,7 @@ public class Page
                                 $"상태 보기\n" +
                                 $"캐릭터의 정보가 표시됩니다.\n\n" +
                                 $"Lv. {player.Level}\n" +
-                                $"Chad ( {player.Class} )\n" +
+                                $"직업: ( {player.Class} )\n" +
                                 $"이름 : {player.Name}\n" +
                                 $"공격력 : {player.TotalATK - player.AddAttack} [+{player.AddAttack}]\n" +
                                 $"방어력 : {player.TotalDEF - player.AddDefense} [+{player.AddDefense}]\n" +
